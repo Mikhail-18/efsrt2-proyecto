@@ -10,7 +10,8 @@ export default function CloseShiftPage() {
   const totalSales = transactions.reduce((sum, tx) => sum + tx.total, 0);
   const cashSales = transactions.filter(tx => tx.paymentMethod === 'Efectivo').reduce((sum, tx) => sum + tx.total, 0);
   const cardSales = transactions.filter(tx => tx.paymentMethod === 'Tarjeta').reduce((sum, tx) => sum + tx.total, 0);
-  const mobileSales = transactions.filter(tx => tx.paymentMethod === 'Móvil').reduce((sum, tx) => sum + tx.total, 0);
+  const yapeSales = transactions.filter(tx => tx.paymentMethod === 'Yape').reduce((sum, tx) => sum + tx.total, 0);
+  const plinSales = transactions.filter(tx => tx.paymentMethod === 'Plin').reduce((sum, tx) => sum + tx.total, 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,7 +37,7 @@ export default function CloseShiftPage() {
             </CardHeader>
         </Card>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
             <Card>
                 <CardHeader>
                     <CardTitle>Ventas Totales</CardTitle>
@@ -64,10 +65,18 @@ export default function CloseShiftPage() {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>Pagos Móviles</CardTitle>
+                    <CardTitle>Ventas con Yape</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold font-mono">S/{mobileSales.toFixed(2)}</p>
+                    <p className="text-2xl font-bold font-mono">S/{yapeSales.toFixed(2)}</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Ventas con Plin</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-2xl font-bold font-mono">S/{plinSales.toFixed(2)}</p>
                 </CardContent>
             </Card>
         </div>

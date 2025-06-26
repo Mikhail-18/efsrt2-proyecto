@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Banknote, CreditCard, Smartphone } from 'lucide-react';
+import { Banknote, CreditCard, Smartphone, Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { processPayment } from '@/lib/actions';
 
@@ -25,19 +25,29 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
   const [splitCount, setSplitCount] = useState(2);
   const [showReceipt, setShowReceipt] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
   const { toast } = useToast();
   const router = useRouter();
 
   const total = useMemo(() => table.order.reduce((sum, item) => sum + item.price * item.quantity, 0), [table.order]);
   
-  const handlePayment = async (method: string) => {
+  const handlePayment = async () => {
+    if (!paymentMethod) {
+      toast({
+        title: "Selección Requerida",
+        description: "Por favor, selecciona un método de pago.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      await processPayment(table.id, method);
+      await processPayment(table.id, paymentMethod);
       
       toast({
         title: "Pago Exitoso",
-        description: `Se ha registrado el pago de ${table.name} con ${method}.`,
+        description: `Se ha registrado el pago de ${table.name} con ${paymentMethod}.`,
         variant: "default",
       });
       setShowReceipt(true);
@@ -97,12 +107,12 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
           </CardFooter>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="font-headline">Procesar Pago</CardTitle>
             <CardDescription>Dividir cuenta y seleccionar método de pago</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 flex-grow">
             <div>
               <Label className="font-semibold">Dividir Cuenta</Label>
               <RadioGroup value={splitType} onValueChange={setSplitType} className="mt-2">
@@ -135,14 +145,49 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
             </div>
             <Separator />
             <div>
-              <Label className="font-semibold mb-2 block">Método de Pago</Label>
-              <div className="grid grid-cols-3 gap-2">
-                <Button variant="outline" size="lg" onClick={() => handlePayment('Efectivo')} disabled={isProcessing}><Banknote className="mr-2 h-5 w-5"/>{isProcessing ? 'Procesando...' : 'Efectivo'}</Button>
-                <Button variant="outline" size="lg" onClick={() => handlePayment('Tarjeta')} disabled={isProcessing}><CreditCard className="mr-2 h-5 w-5"/>{isProcessing ? 'Procesando...' : 'Tarjeta'}</Button>
-                <Button variant="outline" size="lg" onClick={() => handlePayment('Móvil')} disabled={isProcessing}><Smartphone className="mr-2 h-5 w-5"/>{isProcessing ? 'Procesando...' : 'Móvil'}</Button>
-              </div>
+              <Label className="font-semibold mb-4 block">Método de Pago</Label>
+              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-2 gap-4">
+                 <div>
+                    <RadioGroupItem value="Efectivo" id="p-efectivo" className="peer sr-only" />
+                    <Label htmlFor="p-efectivo" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      <Banknote className="mb-3 h-6 w-6" />
+                      Efectivo
+                    </Label>
+                  </div>
+                  <div>
+                    <RadioGroupItem value="Tarjeta" id="p-tarjeta" className="peer sr-only" />
+                    <Label htmlFor="p-tarjeta" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      <CreditCard className="mb-3 h-6 w-6" />
+                      Tarjeta
+                    </Label>
+                  </div>
+                   <div>
+                    <RadioGroupItem value="Yape" id="p-yape" className="peer sr-only" />
+                    <Label htmlFor="p-yape" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      <Smartphone className="mb-3 h-6 w-6" />
+                      Yape
+                    </Label>
+                  </div>
+                   <div>
+                    <RadioGroupItem value="Plin" id="p-plin" className="peer sr-only" />
+                    <Label htmlFor="p-plin" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      <Smartphone className="mb-3 h-6 w-6" />
+                      Plin
+                    </Label>
+                  </div>
+              </RadioGroup>
             </div>
           </CardContent>
+           <CardFooter>
+            <Button onClick={handlePayment} disabled={!paymentMethod || isProcessing} className="w-full" size="lg">
+              {isProcessing ? 'Procesando...' : (
+                  <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Pagar
+                  </>
+              )}
+            </Button>
+          </CardFooter>
         </Card>
       </div>
 
