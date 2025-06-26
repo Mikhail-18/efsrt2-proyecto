@@ -3,14 +3,15 @@
 
 import type { FC } from 'react';
 import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Table, MenuItem, OrderItem } from '@/lib/data';
 import { menu } from '@/lib/data';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, MinusCircle, Trash2, Utensils, Beer, Cookie, Soup } from 'lucide-react';
+import { PlusCircle, MinusCircle, Trash2, Utensils, Beer, Cookie, Soup, Send } from 'lucide-react';
 import { updateOrder } from '@/lib/actions';
 
 interface OrderTakerProps {
@@ -42,7 +43,8 @@ const OrderSummary: FC<{
   order: OrderItem[]; 
   onUpdateQuantity: (itemId: string, quantity: number) => void;
   isSubmitting: boolean;
-}> = ({ order, onUpdateQuantity, isSubmitting }) => {
+  onSubmit: () => void;
+}> = ({ order, onUpdateQuantity, isSubmitting, onSubmit }) => {
   const total = order.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -87,6 +89,14 @@ const OrderSummary: FC<{
             <span>Total:</span>
             <span>${total.toFixed(2)}</span>
           </div>
+          <Button onClick={onSubmit} disabled={isSubmitting} className="w-full mt-4">
+            {isSubmitting ? 'Enviando...' : (
+                <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Enviar Pedido a Cocina
+                </>
+            )}
+          </Button>
         </CardFooter>
       )}
     </Card>
@@ -98,47 +108,49 @@ export function OrderTaker({ table }: OrderTakerProps) {
   const [order, setOrder] = useState<OrderItem[]>(table.order);
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  const handleUpdateServerOrder = (newOrder: OrderItem[]) => {
-    const oldOrder = order;
-    setOrder(newOrder); // Optimistic update
+  const handleAddToOrder = (itemToAdd: MenuItem) => {
+    setOrder(currentOrder => {
+        const existingItem = currentOrder.find(item => item.id === itemToAdd.id);
+        if (existingItem) {
+        return currentOrder.map(item =>
+            item.id === itemToAdd.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+        } else {
+        return [...currentOrder, { ...itemToAdd, quantity: 1 }];
+        }
+    });
+  };
 
+  const handleUpdateQuantity = (itemId: string, quantity: number) => {
+      setOrder(currentOrder => {
+        if (quantity <= 0) {
+            return currentOrder.filter(item => item.id !== itemId);
+        } else {
+            return currentOrder.map(item => (item.id === itemId ? { ...item, quantity } : item));
+        }
+      });
+  };
+
+  const handleSendToKitchen = () => {
     startTransition(async () => {
         try {
-            await updateOrder(table.id, newOrder);
+            await updateOrder(table.id, order);
+            toast({
+                title: "Pedido Enviado",
+                description: `El pedido de la ${table.name} ha sido enviado a la cocina.`,
+            });
+            router.push('/waiter');
         } catch (error) {
-            setOrder(oldOrder); // Revert on error
             toast({
                 title: "Error",
-                description: "No se pudo actualizar el pedido.",
+                description: "No se pudo enviar el pedido.",
                 variant: "destructive",
             });
         }
     });
   }
-
-  const handleAddToOrder = (itemToAdd: MenuItem) => {
-    let newOrder;
-    const existingItem = order.find(item => item.id === itemToAdd.id);
-    if (existingItem) {
-      newOrder = order.map(item =>
-        item.id === itemToAdd.id ? { ...item, quantity: item.quantity + 1 } : item
-      );
-    } else {
-      newOrder = [...order, { ...itemToAdd, quantity: 1 }];
-    }
-    handleUpdateServerOrder(newOrder);
-  };
-
-  const handleUpdateQuantity = (itemId: string, quantity: number) => {
-      let newOrder;
-      if (quantity <= 0) {
-          newOrder = order.filter(item => item.id !== itemId);
-      } else {
-          newOrder = order.map(item => (item.id === itemId ? { ...item, quantity } : item));
-      }
-      handleUpdateServerOrder(newOrder);
-  };
 
   const menuCategories = Array.from(new Set(menu.map(item => item.category)));
 
@@ -168,6 +180,7 @@ export function OrderTaker({ table }: OrderTakerProps) {
           order={order}
           onUpdateQuantity={handleUpdateQuantity}
           isSubmitting={isPending}
+          onSubmit={handleSendToKitchen}
         />
       </div>
     </div>
