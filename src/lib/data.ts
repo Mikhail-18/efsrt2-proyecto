@@ -19,17 +19,22 @@ export interface Table {
 }
 
 export const menu: MenuItem[] = [
-  { id: '1', name: 'Bruschetta con Tomate', price: 8.50, category: 'Entradas' },
-  { id: '2', name: 'Ensalada Caprese', price: 9.00, category: 'Entradas' },
-  { id: '3', name: 'Carpaccio de Res', price: 12.00, category: 'Entradas' },
-  { id: '4', name: 'Lasaña a la Boloñesa', price: 15.00, category: 'Platos Principales' },
-  { id: '5', name: 'Risotto de Hongos', price: 16.50, category: 'Platos Principales' },
-  { id: '6', name: 'Salmón a la Parrilla', price: 18.00, category: 'Platos Principales' },
-  { id: '7', name: 'Tiramisú Clásico', price: 7.00, category: 'Postres' },
-  { id: '8', name: 'Panna Cotta con Frutos Rojos', price: 6.50, category: 'Postres' },
-  { id: '9', name: 'Agua Mineral sin Gas', price: 2.50, category: 'Bebidas' },
-  { id: '10', name: 'Copa de Vino Tinto', price: 5.00, category: 'Bebidas' },
-  { id: '11', name: 'Refresco de Cola', price: 3.00, category: 'Bebidas' },
+  // Entradas
+  { id: '1', name: 'Ceviche Clásico', price: 18.00, category: 'Entradas' },
+  { id: '2', name: 'Causa Limeña', price: 14.00, category: 'Entradas' },
+  { id: '3', name: 'Papa a la Huancaína', price: 12.00, category: 'Entradas' },
+  // Platos Principales
+  { id: '4', name: 'Lomo Saltado', price: 22.00, category: 'Platos Principales' },
+  { id: '5', name: 'Ají de Gallina', price: 19.50, category: 'Platos Principales' },
+  { id: '6', name: 'Arroz con Pollo', price: 17.00, category: 'Platos Principales' },
+  // Postres
+  { id: '7', name: 'Suspiro a la Limeña', price: 9.00, category: 'Postres' },
+  { id: '8', name: 'Picarones', price: 8.50, category: 'Postres' },
+  { id: '9', name: 'Mazamorra Morada', price: 7.50, category: 'Postres' },
+  // Bebidas
+  { id: '10', name: 'Chicha Morada', price: 4.00, category: 'Bebidas' },
+  { id: '11', name: 'Inca Kola', price: 3.50, category: 'Bebidas' },
+  { id: '12', name: 'Pisco Sour', price: 10.00, category: 'Bebidas' },
 ];
 
 // This is a workaround to simulate a database in a development/serverless environment
@@ -41,22 +46,22 @@ declare global {
 const initialTables: Table[] = [
   { id: 1, name: "Mesa 1", status: "free", order: [] },
   { id: 2, name: "Mesa 2", status: "occupied", order: [
-      { ...menu[3], quantity: 1 },
-      { ...menu[4], quantity: 1 },
-      { ...menu[10], quantity: 2 },
+      { ...menu[3], quantity: 1 }, // Lomo Saltado
+      { ...menu[4], quantity: 1 }, // Ají de Gallina
+      { ...menu[10], quantity: 2 }, // Inca Kola
   ] },
   { id: 3, name: "Mesa 3", status: "free", order: [] },
   { id: 4, name: "Mesa 4", status: "reserved", order: [] },
   { id: 5, name: "Mesa 5", status: "occupied", order: [
-      { ...menu[0], quantity: 2 },
-      { ...menu[8], quantity: 1 },
-      { ...menu[9], quantity: 1 },
+      { ...menu[0], quantity: 2 }, // Ceviche Clásico
+      { ...menu[9], quantity: 1 }, // Chicha Morada
+      { ...menu[11], quantity: 1 }, // Pisco Sour
   ] },
   { id: 6, name: "Mesa 6", status: "free", order: [] },
   { id: 7, name: "Mesa 7", status: "free", order: [] },
   { id: 8, name: "Mesa 8", status: "occupied", order: [
-      { ...menu[6], quantity: 2 },
-      { ...menu[7], quantity: 2 },
+      { ...menu[6], quantity: 2 }, // Suspiro a la Limeña
+      { ...menu[7], quantity: 2 }, // Picarones
   ] },
   { id: 9, name: "Mesa 9", status: "free", order: [] },
   { id: 10, name: "Mesa 10", status: "reserved", order: [] },
