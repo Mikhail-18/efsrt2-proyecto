@@ -32,7 +32,13 @@ export const menu: MenuItem[] = [
   { id: '11', name: 'Refresco de Cola', price: 3.00, category: 'Bebidas' },
 ];
 
-export const tables: Table[] = [
+// This is a workaround to simulate a database in a development/serverless environment
+// where module-level variables can be re-initialized on each request/hot-reload.
+declare global {
+  var tables: Table[] | undefined;
+}
+
+const initialTables: Table[] = [
   { id: 1, name: "Mesa 1", status: "free", order: [] },
   { id: 2, name: "Mesa 2", status: "occupied", order: [
       { ...menu[3], quantity: 1 },
@@ -57,6 +63,15 @@ export const tables: Table[] = [
   { id: 11, name: "Mesa 11", status: "free", order: [] },
   { id: 12, name: "Mesa 12", status: "free", order: [] },
 ];
+
+// Use a global variable to preserve the state across hot reloads in development.
+if (!global.tables) {
+  // Deep clone to prevent mutations from affecting the initial data object on subsequent reloads.
+  global.tables = JSON.parse(JSON.stringify(initialTables));
+}
+
+export const tables: Table[] = global.tables as Table[];
+
 
 export const getTableById = (id: number): Table | undefined => {
   return tables.find(table => table.id === id);
