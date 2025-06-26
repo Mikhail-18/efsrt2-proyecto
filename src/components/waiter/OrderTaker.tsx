@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { FC } from 'react';
@@ -40,12 +41,13 @@ const MenuItemCard: FC<{ item: MenuItem; onAddToOrder: (item: MenuItem) => void 
 );
 
 const OrderSummary: FC<{ 
+  table: Table;
   order: OrderItem[]; 
   onUpdateQuantity: (itemId: string, quantity: number) => void;
   onRemoveItem: (itemId: string) => void;
   onSubmitOrder: () => void;
   isSubmitting: boolean;
-}> = ({ order, onUpdateQuantity, onRemoveItem, onSubmitOrder, isSubmitting }) => {
+}> = ({ table, order, onUpdateQuantity, onRemoveItem, onSubmitOrder, isSubmitting }) => {
   const total = order.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -177,6 +179,7 @@ export function OrderTaker({ table }: OrderTakerProps) {
       </div>
       <div className="lg:col-span-1 h-full">
         <OrderSummary 
+          table={table}
           order={order}
           onUpdateQuantity={handleUpdateQuantity}
           onRemoveItem={handleRemoveItem}
