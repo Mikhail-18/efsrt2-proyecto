@@ -18,6 +18,16 @@ export interface Table {
   order: OrderItem[];
 }
 
+export interface Transaction {
+  id: string;
+  tableId: number;
+  tableName: string;
+  order: OrderItem[];
+  total: number;
+  paymentMethod: string;
+  timestamp: Date;
+}
+
 export const menu: MenuItem[] = [
   // Entradas
   { id: '1', name: 'Ceviche Clásico', price: 18.00, category: 'Entradas' },
@@ -41,6 +51,7 @@ export const menu: MenuItem[] = [
 // where module-level variables can be re-initialized on each request/hot-reload.
 declare global {
   var tables: Table[] | undefined;
+  var transactions: Transaction[] | undefined;
 }
 
 const initialTables: Table[] = [
@@ -74,8 +85,12 @@ if (!global.tables) {
   // Deep clone to prevent mutations from affecting the initial data object on subsequent reloads.
   global.tables = JSON.parse(JSON.stringify(initialTables));
 }
-
 export const tables: Table[] = global.tables as Table[];
+
+if (!global.transactions) {
+    global.transactions = [];
+}
+export const transactions: Transaction[] = global.transactions as Transaction[];
 
 
 export const getTableById = (id: number): Table | undefined => {

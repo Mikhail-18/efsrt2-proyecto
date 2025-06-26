@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { tables, type OrderItem } from './data';
+import { tables, type OrderItem, transactions } from './data';
 
 export async function updateOrder(tableId: number, newOrder: OrderItem[]) {
   const table = tables.find(t => t.id === tableId);
@@ -39,4 +39,33 @@ export async function clearTable(tableId: number) {
         return { success: true };
     }
     return { success: false, message: 'Table not found' };
+}
+
+export async function processPayment(tableId: number, paymentMethod: string) {
+    const table = tables.find(t => t.id === tableId);
+    if (table && table.order.length > 0) {
+        const total = table.order.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        
+        transactions.push({
+            id: `${Date.now()}-${tableId}`,
+            tableId: table.id,
+            tableName: table.name,
+            order: [...table.order],
+            total,
+            paymentMethod,
+            timestamp: new Date(),
+        });
+
+        await clearTable(tableId);
+
+        revalidatePath('/cashier/close-shift');
+        return { success: true };
+    }
+    return { success: false, message: 'Table not found or order is empty' };
+}
+
+export async function clearTransactions() {
+    transactions.length = 0;
+    revalidatePath('/cashier/close-shift');
+    return { success: true };
 }

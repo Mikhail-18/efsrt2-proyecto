@@ -1,35 +1,38 @@
 import { AppHeader } from '@/components/AppHeader';
-import { tables, type OrderItem } from '@/lib/data';
+import { transactions } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
-
-const calculateTotal = (order: OrderItem[]) => {
-    return order.reduce((sum, item) => sum + item.price * item.quantity, 0);
-}
+import { Download, XCircle } from 'lucide-react';
+import { clearTransactions } from '@/lib/actions';
 
 export default function CloseShiftPage() {
-  const paidTables = tables.filter(t => t.status === 'occupied' && t.order.length > 0);
-  const totalSales = paidTables.reduce((sum, table) => sum + calculateTotal(table.order), 0);
-  // Mocking payment method distribution
-  const cashSales = totalSales * 0.4;
-  const cardSales = totalSales * 0.5;
-  const mobileSales = totalSales * 0.1;
+  const totalSales = transactions.reduce((sum, tx) => sum + tx.total, 0);
+  const cashSales = transactions.filter(tx => tx.paymentMethod === 'Efectivo').reduce((sum, tx) => sum + tx.total, 0);
+  const cardSales = transactions.filter(tx => tx.paymentMethod === 'Tarjeta').reduce((sum, tx) => sum + tx.total, 0);
+  const mobileSales = transactions.filter(tx => tx.paymentMethod === 'Móvil').reduce((sum, tx) => sum + tx.total, 0);
 
   return (
     <div className="min-h-screen bg-background">
       <AppHeader title="Cierre de Caja">
-        <Button variant="default">
-          <Download className="mr-2 h-4 w-4" />
-          Exportar Reporte
-        </Button>
+        <div className="flex items-center gap-4">
+            <Button variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              Exportar Reporte
+            </Button>
+            <form action={clearTransactions}>
+                <Button variant="destructive" type="submit">
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Cerrar Turno
+                </Button>
+            </form>
+        </div>
       </AppHeader>
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         <Card className="mb-8">
             <CardHeader>
                 <CardTitle className="text-3xl font-headline">Reporte de Turno</CardTitle>
-                <CardDescription>Resumen de las transacciones del turno actual.</CardDescription>
+                <CardDescription>Resumen de todas las transacciones pagadas en el turno actual.</CardDescription>
             </CardHeader>
         </Card>
 
@@ -71,27 +74,27 @@ export default function CloseShiftPage() {
 
         <Card>
             <CardHeader>
-                <CardTitle>Detalle de Transacciones</CardTitle>
+                <CardTitle>Detalle de Transacciones Pagadas</CardTitle>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead>Mesa</TableHead>
-                            <TableHead>Nº de Artículos</TableHead>
+                            <TableHead>Método de Pago</TableHead>
                             <TableHead className="text-right">Monto Total</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {paidTables.map(table => (
-                            <TableRow key={table.id}>
-                                <TableCell className="font-medium">{table.name}</TableCell>
-                                <TableCell>{table.order.reduce((sum, item) => sum + item.quantity, 0)}</TableCell>
-                                <TableCell className="text-right font-mono">S/{calculateTotal(table.order).toFixed(2)}</TableCell>
+                        {transactions.map(tx => (
+                            <TableRow key={tx.id}>
+                                <TableCell className="font-medium">{tx.tableName}</TableCell>
+                                <TableCell>{tx.paymentMethod}</TableCell>
+                                <TableCell className="text-right font-mono">S/{tx.total.toFixed(2)}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
-                    <TableCaption>{paidTables.length > 0 ? "Listado de todas las mesas cobradas en el turno." : "No hay transacciones en este turno."}</TableCaption>
+                    <TableCaption>{transactions.length > 0 ? "Listado de todas las transacciones pagadas en el turno." : "No hay transacciones pagadas en este turno."}</TableCaption>
                 </Table>
             </CardContent>
         </Card>

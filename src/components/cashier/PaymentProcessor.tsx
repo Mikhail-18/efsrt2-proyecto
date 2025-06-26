@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Banknote, CreditCard, Smartphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { clearTable } from '@/lib/actions';
+import { processPayment } from '@/lib/actions';
 
 interface PaymentProcessorProps {
   table: Table;
@@ -33,7 +33,7 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
   const handlePayment = async (method: string) => {
     setIsProcessing(true);
     try {
-      await clearTable(table.id);
+      await processPayment(table.id, method);
       
       toast({
         title: "Pago Exitoso",
