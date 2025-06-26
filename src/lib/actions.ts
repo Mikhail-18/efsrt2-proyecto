@@ -34,7 +34,9 @@ export async function clearTable(tableId: number) {
         
         revalidatePath('/waiter');
         revalidatePath('/cashier');
-        revalidatePath(`/cashier/table/${tableId}`);
+        // NOTE: The revalidation for `/cashier/table/${tableId}` is removed
+        // to prevent a 404 error after payment is processed, before the
+        // client-side redirect can occur.
 
         return { success: true };
     }
