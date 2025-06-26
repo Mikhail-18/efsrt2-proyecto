@@ -1,0 +1,21 @@
+{
+  "name": "RestoFlow",
+  "short_name": "RestoFlow",
+  "description": "Software para optimizar la atención al cliente en restaurantes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F5DC",
+  "theme_color": "#E2725B",
+  "icons": [
+    {
+      "src": "https://placehold.co/192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://placehold.co/512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
