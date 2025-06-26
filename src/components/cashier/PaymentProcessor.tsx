@@ -20,12 +20,18 @@ interface PaymentProcessorProps {
   table: Table;
 }
 
+interface ReceiptData {
+    order: OrderItem[];
+    total: number;
+    tableName: string;
+}
+
 export function PaymentProcessor({ table }: PaymentProcessorProps) {
   const [splitType, setSplitType] = useState('none');
   const [splitCount, setSplitCount] = useState(2);
-  const [showReceipt, setShowReceipt] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -43,18 +49,22 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
 
     setIsProcessing(true);
     try {
-      await processPayment(table.id, paymentMethod);
+      const result = await processPayment(table.id, paymentMethod);
       
-      toast({
-        title: "Pago Exitoso",
-        description: `Se ha registrado el pago de ${table.name} con ${paymentMethod}.`,
-        variant: "default",
-      });
-      setShowReceipt(true);
+      if (result.success && result.receipt) {
+        setReceiptData(result.receipt);
+        toast({
+          title: "Pago Exitoso",
+          description: `Se ha registrado el pago de ${result.receipt.tableName} con ${paymentMethod}.`,
+          variant: "default",
+        });
+      } else {
+        throw new Error(result.message || 'No se pudo procesar el pago.');
+      }
     } catch (error) {
        toast({
         title: "Error de Pago",
-        description: "No se pudo procesar el pago.",
+        description: error instanceof Error ? error.message : "Ocurrió un error inesperado.",
         variant: "destructive",
       });
       setIsProcessing(false);
@@ -62,8 +72,8 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
   };
 
   const handleDialogClose = (open: boolean) => {
-    setShowReceipt(open);
     if (!open) {
+      setReceiptData(null);
       router.push('/cashier');
     }
   }
@@ -191,25 +201,27 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
         </Card>
       </div>
 
-      <Dialog open={showReceipt} onOpenChange={handleDialogClose}>
+      <Dialog open={!!receiptData} onOpenChange={handleDialogClose}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-headline">Recibo de {table.name}</DialogTitle>
+            <DialogTitle className="font-headline">Recibo de {receiptData?.tableName}</DialogTitle>
             <DialogDescription>
               Gracias por su visita a RestoFlow. La mesa será liberada al cerrar este diálogo.
             </DialogDescription>
           </DialogHeader>
-          <div className="my-4">
-            <ScrollArea className="h-64 border rounded-md p-4">
-              <BillDetails order={table.order} />
-            </ScrollArea>
-             <Separator className="my-2" />
-            <div className="flex justify-between items-center w-full font-bold text-lg">
-                <span>Total:</span>
-                <span className="font-mono">S/{total.toFixed(2)}</span>
+          {receiptData && (
+            <div className="my-4">
+              <ScrollArea className="h-64 border rounded-md p-4">
+                <BillDetails order={receiptData.order} />
+              </ScrollArea>
+              <Separator className="my-2" />
+              <div className="flex justify-between items-center w-full font-bold text-lg">
+                  <span>Total:</span>
+                  <span className="font-mono">S/{receiptData.total.toFixed(2)}</span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">Pagado. ¡Vuelva pronto!</p>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">Pagado. ¡Vuelva pronto!</p>
-          </div>
+          )}
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="secondary">Cerrar</Button>
