@@ -13,6 +13,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Banknote, CreditCard, Smartphone } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { clearTable } from '@/lib/actions';
 
 interface PaymentProcessorProps {
   table: Table;
@@ -21,21 +23,40 @@ interface PaymentProcessorProps {
 export function PaymentProcessor({ table }: PaymentProcessorProps) {
   const [splitType, setSplitType] = useState('none');
   const [splitCount, setSplitCount] = useState(2);
-  const [isPaid, setIsPaid] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const total = useMemo(() => table.order.reduce((sum, item) => sum + item.price * item.quantity, 0), [table.order]);
   
-  const handlePayment = (method: string) => {
-    console.log(`Payment of $${total.toFixed(2)} for ${table.name} via ${method}`);
-    setIsPaid(true);
-    toast({
-      title: "Pago Exitoso",
-      description: `Se ha registrado el pago de ${table.name} con ${method}.`,
-      variant: "default",
-    });
+  const handlePayment = async (method: string) => {
+    setIsProcessing(true);
+    try {
+      await clearTable(table.id);
+      
+      toast({
+        title: "Pago Exitoso",
+        description: `Se ha registrado el pago de ${table.name} con ${method}.`,
+        variant: "default",
+      });
+      setShowReceipt(true);
+    } catch (error) {
+       toast({
+        title: "Error de Pago",
+        description: "No se pudo procesar el pago.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+    }
   };
+
+  const handleDialogClose = (open: boolean) => {
+    setShowReceipt(open);
+    if (!open) {
+      router.push('/cashier');
+    }
+  }
 
   const getSplitAmount = () => {
     if (splitType === 'equally' && splitCount > 0) {
@@ -115,33 +136,22 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
             <Separator />
             <div>
               <Label className="font-semibold mb-2 block">Método de Pago</Label>
-              {isPaid ? (
-                 <div className="text-center p-4 bg-green-100 rounded-md">
-                   <p className="font-semibold text-green-800">Cuenta Pagada</p>
-                 </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-2">
-                  <Button variant="outline" size="lg" onClick={() => handlePayment('Efectivo')}><Banknote className="mr-2 h-5 w-5"/>Efectivo</Button>
-                  <Button variant="outline" size="lg" onClick={() => handlePayment('Tarjeta')}><CreditCard className="mr-2 h-5 w-5"/>Tarjeta</Button>
-                  <Button variant="outline" size="lg" onClick={() => handlePayment('Móvil')}><Smartphone className="mr-2 h-5 w-5"/>Móvil</Button>
-                </div>
-              )}
+              <div className="grid grid-cols-3 gap-2">
+                <Button variant="outline" size="lg" onClick={() => handlePayment('Efectivo')} disabled={isProcessing}><Banknote className="mr-2 h-5 w-5"/>{isProcessing ? 'Procesando...' : 'Efectivo'}</Button>
+                <Button variant="outline" size="lg" onClick={() => handlePayment('Tarjeta')} disabled={isProcessing}><CreditCard className="mr-2 h-5 w-5"/>{isProcessing ? 'Procesando...' : 'Tarjeta'}</Button>
+                <Button variant="outline" size="lg" onClick={() => handlePayment('Móvil')} disabled={isProcessing}><Smartphone className="mr-2 h-5 w-5"/>{isProcessing ? 'Procesando...' : 'Móvil'}</Button>
+              </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={!isPaid} onClick={() => setShowReceipt(true)}>
-              Generar Recibo
-            </Button>
-          </CardFooter>
         </Card>
       </div>
 
-      <Dialog open={showReceipt} onOpenChange={setShowReceipt}>
+      <Dialog open={showReceipt} onOpenChange={handleDialogClose}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-headline">Recibo de {table.name}</DialogTitle>
             <DialogDescription>
-              Gracias por su visita a RestoFlow.
+              Gracias por su visita a RestoFlow. La mesa será liberada al cerrar este diálogo.
             </DialogDescription>
           </DialogHeader>
           <div className="my-4">

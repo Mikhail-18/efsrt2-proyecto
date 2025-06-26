@@ -11,7 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, MinusCircle, Trash2, Utensils, Beer, Cookie, Soup } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
+import { updateOrder } from '@/lib/actions';
 
 interface OrderTakerProps {
   table: Table;
@@ -43,7 +44,8 @@ const OrderSummary: FC<{
   onUpdateQuantity: (itemId: string, quantity: number) => void;
   onRemoveItem: (itemId: string) => void;
   onSubmitOrder: () => void;
-}> = ({ order, onUpdateQuantity, onRemoveItem, onSubmitOrder }) => {
+  isSubmitting: boolean;
+}> = ({ order, onUpdateQuantity, onRemoveItem, onSubmitOrder, isSubmitting }) => {
   const total = order.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -89,7 +91,9 @@ const OrderSummary: FC<{
             <span>Total:</span>
             <span>${total.toFixed(2)}</span>
           </div>
-          <Button onClick={onSubmitOrder} size="lg">Enviar Pedido a Cocina</Button>
+          <Button onClick={onSubmitOrder} size="lg" disabled={isSubmitting}>
+            {isSubmitting ? 'Enviando...' : 'Enviar Pedido a Cocina'}
+          </Button>
         </CardFooter>
       )}
     </Card>
@@ -100,6 +104,8 @@ const OrderSummary: FC<{
 export function OrderTaker({ table }: OrderTakerProps) {
   const [order, setOrder] = useState<OrderItem[]>(table.order);
   const { toast } = useToast();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddToOrder = (itemToAdd: MenuItem) => {
     setOrder(prevOrder => {
@@ -127,13 +133,24 @@ export function OrderTaker({ table }: OrderTakerProps) {
     setOrder(prevOrder => prevOrder.filter(item => item.id !== itemId));
   };
   
-  const handleSubmitOrder = () => {
-    console.log("Order submitted:", order);
-    toast({
-      title: "Pedido Enviado",
-      description: `El pedido para ${table.name} ha sido enviado a la cocina.`,
-      variant: "default",
-    });
+  const handleSubmitOrder = async () => {
+    setIsSubmitting(true);
+    try {
+      await updateOrder(table.id, order);
+      toast({
+        title: "Pedido Enviado",
+        description: `El pedido para ${table.name} ha sido enviado a la cocina.`,
+        variant: "default",
+      });
+      router.push('/waiter');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo enviar el pedido.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   const menuCategories = Array.from(new Set(menu.map(item => item.category)));
@@ -165,6 +182,7 @@ export function OrderTaker({ table }: OrderTakerProps) {
           onUpdateQuantity={handleUpdateQuantity}
           onRemoveItem={handleRemoveItem}
           onSubmitOrder={handleSubmitOrder}
+          isSubmitting={isSubmitting}
         />
       </div>
     </div>
