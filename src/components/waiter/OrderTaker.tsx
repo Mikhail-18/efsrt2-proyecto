@@ -111,26 +111,56 @@ export function OrderTaker({ table }: OrderTakerProps) {
   const router = useRouter();
 
   const handleAddToOrder = (itemToAdd: MenuItem) => {
-    setOrder(currentOrder => {
-        const existingItem = currentOrder.find(item => item.id === itemToAdd.id);
-        if (existingItem) {
-        return currentOrder.map(item =>
-            item.id === itemToAdd.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-        } else {
-        return [...currentOrder, { ...itemToAdd, quantity: 1 }];
-        }
+    startTransition(async () => {
+      const currentOrder = order;
+      
+      const optimisticOrder = [...currentOrder];
+      const existingItemIndex = optimisticOrder.findIndex(item => item.id === itemToAdd.id);
+      
+      if (existingItemIndex > -1) {
+        optimisticOrder[existingItemIndex] = { 
+          ...optimisticOrder[existingItemIndex], 
+          quantity: optimisticOrder[existingItemIndex].quantity + 1 
+        };
+      } else {
+        optimisticOrder.push({ ...itemToAdd, quantity: 1 });
+      }
+      
+      setOrder(optimisticOrder);
+
+      try {
+        await updateOrder(table.id, optimisticOrder);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "No se pudo añadir el artículo. El cambio se ha deshecho.",
+          variant: "destructive",
+        });
+        setOrder(currentOrder); // Revert on failure
+      }
     });
   };
 
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
-      setOrder(currentOrder => {
-        if (quantity <= 0) {
-            return currentOrder.filter(item => item.id !== itemId);
-        } else {
-            return currentOrder.map(item => (item.id === itemId ? { ...item, quantity } : item));
-        }
-      });
+    startTransition(async () => {
+      const currentOrder = order;
+      const optimisticOrder = quantity <= 0
+        ? currentOrder.filter(item => item.id !== itemId)
+        : currentOrder.map(item => (item.id === itemId ? { ...item, quantity } : item));
+
+      setOrder(optimisticOrder);
+
+      try {
+        await updateOrder(table.id, optimisticOrder);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "No se pudo actualizar el pedido. El cambio se ha deshecho.",
+          variant: "destructive",
+        });
+        setOrder(currentOrder); // Revert on failure
+      }
+    });
   };
 
   const handleSendToKitchen = () => {
