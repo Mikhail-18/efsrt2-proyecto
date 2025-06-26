@@ -26,25 +26,20 @@ export async function updateOrder(tableId: number, newOrder: OrderItem[]) {
   return { success: false, message: 'Table not found' };
 }
 
-export async function clearTable(tableId: number) {
+export async function finalizePayment(tableId: number) {
     const table = tables.find(t => t.id === tableId);
     if (table) {
         table.order = [];
         table.status = 'free';
         
-        // Revalidate the waiter dashboard so they see the table is free.
         revalidatePath('/waiter');
-
-        // DO NOT revalidate `/cashier` or `/cashier/table/[id]` here.
-        // Doing so causes the page to re-render with the new "free" status,
-        // which triggers a `notFound()` call and results in a 404 page
-        // before the client can redirect. The cashier dashboard will update
-        // when the user navigates back to it.
-
+        revalidatePath('/cashier');
+        
         return { success: true };
     }
     return { success: false, message: 'Table not found' };
 }
+
 
 export async function processPayment(tableId: number, paymentMethod: string) {
     const table = tables.find(t => t.id === tableId);
@@ -67,8 +62,7 @@ export async function processPayment(tableId: number, paymentMethod: string) {
             timestamp: new Date(),
         });
 
-        await clearTable(tableId);
-
+        // The table is NOT cleared here. This is handled by finalizePayment.
         revalidatePath('/cashier/close-shift');
         return { success: true, receipt: receiptDetails };
     }

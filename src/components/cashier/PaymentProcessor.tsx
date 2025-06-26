@@ -1,7 +1,7 @@
 "use client";
 
 import type { FC } from 'react';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useTransition } from 'react';
 import type { Table, OrderItem } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Banknote, CreditCard, Smartphone, Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { processPayment } from '@/lib/actions';
+import { processPayment, finalizePayment } from '@/lib/actions';
 
 interface PaymentProcessorProps {
   table: Table;
@@ -26,6 +26,17 @@ interface ReceiptData {
     tableName: string;
 }
 
+const BillDetails: FC<{order: OrderItem[]}> = ({ order }) => (
+    <ul className="space-y-2">
+      {order.map(item => (
+        <li key={item.id} className="flex justify-between items-baseline">
+          <span>{item.name} <span className="text-sm text-muted-foreground">x{item.quantity}</span></span>
+          <span className="font-mono">S/{(item.price * item.quantity).toFixed(2)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
 export function PaymentProcessor({ table }: PaymentProcessorProps) {
   const [splitType, setSplitType] = useState('none');
   const [splitCount, setSplitCount] = useState(2);
@@ -34,6 +45,7 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const [isFinalizing, startFinalizing] = useTransition();
 
   const total = useMemo(() => table.order.reduce((sum, item) => sum + item.price * item.quantity, 0), [table.order]);
   
@@ -67,14 +79,18 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
         description: error instanceof Error ? error.message : "Ocurrió un error inesperado.",
         variant: "destructive",
       });
-      setIsProcessing(false);
+    } finally {
+        setIsProcessing(false);
     }
   };
 
   const handleDialogClose = (open: boolean) => {
-    if (!open) {
-      setReceiptData(null);
-      router.push('/cashier');
+    if (!open && receiptData) {
+      startFinalizing(async () => {
+        await finalizePayment(table.id);
+        setReceiptData(null);
+        router.push('/cashier');
+      });
     }
   }
 
@@ -84,17 +100,6 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
     }
     return total;
   };
-
-  const BillDetails: FC<{order: OrderItem[]}> = ({ order }) => (
-    <ul className="space-y-2">
-      {order.map(item => (
-        <li key={item.id} className="flex justify-between items-baseline">
-          <span>{item.name} <span className="text-sm text-muted-foreground">x{item.quantity}</span></span>
-          <span className="font-mono">S/{(item.price * item.quantity).toFixed(2)}</span>
-        </li>
-      ))}
-    </ul>
-  );
 
   return (
     <>
@@ -224,7 +229,9 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
           )}
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="secondary">Cerrar</Button>
+              <Button type="button" variant="secondary" disabled={isFinalizing}>
+                {isFinalizing ? "Cerrando..." : "Cerrar"}
+              </Button>
             </DialogClose>
             <Button type="button" onClick={() => window.print()}>Imprimir</Button>
           </DialogFooter>
