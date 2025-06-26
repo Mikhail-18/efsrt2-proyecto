@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { FC } from 'react';
@@ -30,7 +29,7 @@ const MenuItemCard: FC<{ item: MenuItem; onAddToOrder: (item: MenuItem) => void;
     <CardContent className="p-4 flex justify-between items-center">
       <div>
         <p className="font-semibold">{item.name}</p>
-        <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+        <p className="text-sm text-muted-foreground">S/{item.price.toFixed(2)}</p>
       </div>
       <Button size="icon" variant="ghost" onClick={() => onAddToOrder(item)} disabled={disabled}>
         <PlusCircle className="h-6 w-6 text-primary" />
@@ -62,7 +61,7 @@ const OrderSummary: FC<{
                 <li key={item.id} className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground">S/{item.price.toFixed(2)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" onClick={() => onUpdateQuantity(item.id, item.quantity - 1)} disabled={isSubmitting}>
@@ -87,7 +86,7 @@ const OrderSummary: FC<{
           <Separator className="my-2" />
           <div className="flex justify-between items-center font-bold text-lg">
             <span>Total:</span>
-            <span>${total.toFixed(2)}</span>
+            <span>S/{total.toFixed(2)}</span>
           </div>
           <Button onClick={onSubmit} disabled={isSubmitting} className="w-full mt-4">
             {isSubmitting ? 'Enviando...' : (

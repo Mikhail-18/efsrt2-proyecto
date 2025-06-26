@@ -40,7 +40,7 @@ export default function CloseShiftPage() {
                     <CardDescription>Ingresos totales del turno</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-3xl font-bold font-mono text-primary">${totalSales.toFixed(2)}</p>
+                    <p className="text-3xl font-bold font-mono text-primary">S/{totalSales.toFixed(2)}</p>
                 </CardContent>
             </Card>
             <Card>
@@ -48,7 +48,7 @@ export default function CloseShiftPage() {
                     <CardTitle>Ventas en Efectivo</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold font-mono">${cashSales.toFixed(2)}</p>
+                    <p className="text-2xl font-bold font-mono">S/{cashSales.toFixed(2)}</p>
                 </CardContent>
             </Card>
             <Card>
@@ -56,7 +56,7 @@ export default function CloseShiftPage() {
                     <CardTitle>Ventas con Tarjeta</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold font-mono">${cardSales.toFixed(2)}</p>
+                    <p className="text-2xl font-bold font-mono">S/{cardSales.toFixed(2)}</p>
                 </CardContent>
             </Card>
             <Card>
@@ -64,7 +64,7 @@ export default function CloseShiftPage() {
                     <CardTitle>Pagos Móviles</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-2xl font-bold font-mono">${mobileSales.toFixed(2)}</p>
+                    <p className="text-2xl font-bold font-mono">S/{mobileSales.toFixed(2)}</p>
                 </CardContent>
             </Card>
         </div>
@@ -87,7 +87,7 @@ export default function CloseShiftPage() {
                             <TableRow key={table.id}>
                                 <TableCell className="font-medium">{table.name}</TableCell>
                                 <TableCell>{table.order.reduce((sum, item) => sum + item.quantity, 0)}</TableCell>
-                                <TableCell className="text-right font-mono">${calculateTotal(table.order).toFixed(2)}</TableCell>
+                                <TableCell className="text-right font-mono">S/{calculateTotal(table.order).toFixed(2)}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

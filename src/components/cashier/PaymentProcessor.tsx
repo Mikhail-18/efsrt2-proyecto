@@ -70,7 +70,7 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
       {order.map(item => (
         <li key={item.id} className="flex justify-between items-baseline">
           <span>{item.name} <span className="text-sm text-muted-foreground">x{item.quantity}</span></span>
-          <span className="font-mono">${(item.price * item.quantity).toFixed(2)}</span>
+          <span className="font-mono">S/{(item.price * item.quantity).toFixed(2)}</span>
         </li>
       ))}
     </ul>
@@ -92,7 +92,7 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
           <CardFooter>
             <div className="flex justify-between items-center w-full font-bold text-xl">
                 <span>Total:</span>
-                <span className="font-mono">${total.toFixed(2)}</span>
+                <span className="font-mono">S/{total.toFixed(2)}</span>
             </div>
           </CardFooter>
         </Card>
@@ -131,7 +131,7 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
             <Separator />
             <div className="text-center">
               <p className="text-muted-foreground">Total a pagar {splitType === 'equally' ? 'por persona' : ''}</p>
-              <p className="font-bold text-3xl font-mono text-primary">${getSplitAmount().toFixed(2)}</p>
+              <p className="font-bold text-3xl font-mono text-primary">S/{getSplitAmount().toFixed(2)}</p>
             </div>
             <Separator />
             <div>
@@ -161,7 +161,7 @@ export function PaymentProcessor({ table }: PaymentProcessorProps) {
              <Separator className="my-2" />
             <div className="flex justify-between items-center w-full font-bold text-lg">
                 <span>Total:</span>
-                <span className="font-mono">${total.toFixed(2)}</span>
+                <span className="font-mono">S/{total.toFixed(2)}</span>
             </div>
             <p className="text-sm text-muted-foreground mt-2">Pagado. ¡Vuelva pronto!</p>
           </div>
