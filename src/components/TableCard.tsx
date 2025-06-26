@@ -16,7 +16,11 @@ const statusMap: Record<TableStatus, { text: string; className: string }> = {
 };
 
 export function TableCard({ table, role }: TableCardProps) {
-  const isClickable = role === 'waiter' || (role === 'cashier' && table.status === 'occupied');
+  // A table is considered "occupied" if it has items in the order.
+  const effectiveStatus = table.order.length > 0 ? 'occupied' : table.status;
+  
+  const isClickable = role === 'waiter' || (role === 'cashier' && effectiveStatus === 'occupied');
+  
   const cardContent = (
     <Card className={cn(
       "h-full transition-all duration-300 shadow-md",
@@ -26,12 +30,12 @@ export function TableCard({ table, role }: TableCardProps) {
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle className="font-headline text-2xl">{table.name}</CardTitle>
-          <Badge variant="outline" className={cn("text-sm", statusMap[table.status].className)}>
-            {statusMap[table.status].text}
+          <Badge variant="outline" className={cn("text-sm", statusMap[effectiveStatus].className)}>
+            {statusMap[effectiveStatus].text}
           </Badge>
         </div>
         <CardDescription className="pt-2">
-          {table.status === 'occupied' ? `${table.order.length} artículo(s) en el pedido` : 'Toca para empezar un pedido'}
+          {effectiveStatus === 'occupied' ? `${table.order.length} artículo(s) en el pedido` : 'Toca para empezar un pedido'}
         </CardDescription>
       </CardHeader>
     </Card>
