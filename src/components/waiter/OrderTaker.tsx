@@ -83,7 +83,7 @@ const OrderSummary: FC<{
           )}
         </CardContent>
       </ScrollArea>
-      {order.length > 0 && (
+      {(order.length > 0 || table.order.length > 0) && ( // Show footer if there is a new order or an existing one
         <CardFooter className="flex-col items-stretch mt-auto p-4 border-t">
           <Textarea placeholder="Añadir peticiones especiales..." className="mb-4" />
           <Separator className="my-4" />
@@ -92,7 +92,7 @@ const OrderSummary: FC<{
             <span>${total.toFixed(2)}</span>
           </div>
           <Button onClick={onSubmitOrder} size="lg" disabled={isSubmitting}>
-            {isSubmitting ? 'Enviando...' : 'Enviar Pedido a Cocina'}
+            {isSubmitting ? 'Actualizando...' : 'Actualizar Pedido'}
           </Button>
         </CardFooter>
       )}
@@ -104,7 +104,6 @@ const OrderSummary: FC<{
 export function OrderTaker({ table }: OrderTakerProps) {
   const [order, setOrder] = useState<OrderItem[]>(table.order);
   const { toast } = useToast();
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddToOrder = (itemToAdd: MenuItem) => {
@@ -138,17 +137,17 @@ export function OrderTaker({ table }: OrderTakerProps) {
     try {
       await updateOrder(table.id, order);
       toast({
-        title: "Pedido Enviado",
-        description: `El pedido para ${table.name} ha sido enviado a la cocina.`,
+        title: "Pedido Actualizado",
+        description: `El pedido para ${table.name} ha sido actualizado.`,
         variant: "default",
       });
-      router.push('/waiter');
     } catch (error) {
       toast({
         title: "Error",
-        description: "No se pudo enviar el pedido.",
+        description: "No se pudo actualizar el pedido.",
         variant: "destructive",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
