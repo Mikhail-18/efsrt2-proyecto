@@ -27,11 +27,18 @@ interface ReceiptData {
 }
 
 const BillDetails: FC<{order: OrderItem[]}> = ({ order }) => (
-    <ul className="space-y-2">
+    <ul className="space-y-3">
       {order.map(item => (
-        <li key={item.id} className="flex justify-between items-baseline">
-          <span>{item.name} <span className="text-sm text-muted-foreground">x{item.quantity}</span></span>
-          <span className="font-mono">S/{(item.price * item.quantity).toFixed(2)}</span>
+        <li key={item.id}>
+          <div className="flex justify-between items-baseline">
+            <span>{item.name} <span className="text-sm text-muted-foreground">x{item.quantity}</span></span>
+            <span className="font-mono">S/{(item.price * item.quantity).toFixed(2)}</span>
+          </div>
+          {item.notes && (
+            <p className="text-xs text-muted-foreground pl-2 border-l-2 border-muted ml-1 mt-1">
+              Nota: {item.notes}
+            </p>
+          )}
         </li>
       ))}
     </ul>

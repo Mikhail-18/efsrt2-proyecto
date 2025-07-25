@@ -9,6 +9,7 @@ export interface MenuItem {
 
 export interface OrderItem extends MenuItem {
   quantity: number;
+  notes?: string;
 }
 
 export interface Table {
@@ -57,22 +58,22 @@ declare global {
 const initialTables: Table[] = [
   { id: 1, name: "Mesa 1", status: "free", order: [] },
   { id: 2, name: "Mesa 2", status: "occupied", order: [
-      { ...menu[3], quantity: 1 }, // Lomo Saltado
-      { ...menu[4], quantity: 1 }, // Ají de Gallina
-      { ...menu[10], quantity: 2 }, // Inca Kola
+      { ...menu[3], quantity: 1, notes: 'Término medio' },
+      { ...menu[4], quantity: 1, notes: '' },
+      { ...menu[10], quantity: 2, notes: 'Con hielo' },
   ] },
   { id: 3, name: "Mesa 3", status: "free", order: [] },
   { id: 4, name: "Mesa 4", status: "reserved", order: [] },
   { id: 5, name: "Mesa 5", status: "occupied", order: [
-      { ...menu[0], quantity: 2 }, // Ceviche Clásico
-      { ...menu[9], quantity: 1 }, // Chicha Morada
-      { ...menu[11], quantity: 1 }, // Pisco Sour
+      { ...menu[0], quantity: 2, notes: 'Sin ají' },
+      { ...menu[9], quantity: 1, notes: '' },
+      { ...menu[11], quantity: 1, notes: '' },
   ] },
   { id: 6, name: "Mesa 6", status: "free", order: [] },
   { id: 7, name: "Mesa 7", status: "free", order: [] },
   { id: 8, name: "Mesa 8", status: "occupied", order: [
-      { ...menu[6], quantity: 2 }, // Suspiro a la Limeña
-      { ...menu[7], quantity: 2 }, // Picarones
+      { ...menu[6], quantity: 2, notes: '' },
+      { ...menu[7], quantity: 2, notes: 'Miel extra' },
   ] },
   { id: 9, name: "Mesa 9", status: "free", order: [] },
   { id: 10, name: "Mesa 10", status: "reserved", order: [] },
