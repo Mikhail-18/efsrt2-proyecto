@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Utensils, BarChart3, Users } from 'lucide-react';
+import { Utensils, BarChart3, Users, DoorClosed } from 'lucide-react';
 
 export default function AdminDashboard() {
   const features = [
@@ -19,6 +19,14 @@ export default function AdminDashboard() {
       icon: <BarChart3 className="h-8 w-8 text-primary" />,
       cta: 'Ver Reportes',
       disabled: false,
+    },
+    {
+        title: 'Cierre de Caja',
+        description: 'Consulta el reporte del turno y cierra la caja.',
+        href: '/admin/close-shift',
+        icon: <DoorClosed className="h-8 w-8 text-primary" />,
+        cta: 'Ir a Cierre de Caja',
+        disabled: false,
     },
     {
       title: 'Gestionar Empleados',
