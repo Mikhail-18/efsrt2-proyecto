@@ -17,45 +17,37 @@ const statusMap: Record<TableStatus, { text: string; className: string }> = {
 };
 
 export function TableCard({ table, role }: TableCardProps) {
-  // A table is considered "occupied" if it has items in the order.
   const effectiveStatus = table.order.length > 0 ? 'occupied' : table.status;
-  
   const isClickable = role === 'waiter' || (role === 'cashier' && effectiveStatus === 'occupied');
-  
-  const cardContent = (
+  const LinkWrapper = isClickable ? Link : 'div';
+  const linkProps = isClickable ? { href: `/${role}/table/${table.id}` } : {};
+
+  return (
     <Card className={cn(
       "h-full transition-all duration-300 shadow-md flex flex-col",
       isClickable && "hover:shadow-lg hover:border-primary/50",
-      !isClickable && "bg-muted/50"
+      !isClickable && "bg-muted/50 cursor-not-allowed"
     )}>
-      <CardHeader className="flex-grow">
-        <div className="flex justify-between items-start">
-          <div className='flex-1'>
-            <CardTitle className="font-headline text-2xl">{table.name}</CardTitle>
-            <CardDescription className="pt-2">
-              {effectiveStatus === 'occupied' ? `${table.order.length} artículo(s) en el pedido` : effectiveStatus === 'free' ? 'Toca para empezar un pedido' : 'Mesa reservada'}
-            </CardDescription>
+      <LinkWrapper {...linkProps} className="block flex-grow">
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div className='flex-1'>
+              <CardTitle className="font-headline text-2xl">{table.name}</CardTitle>
+              <CardDescription className="pt-2">
+                {effectiveStatus === 'occupied' ? `${table.order.length} artículo(s) en el pedido` : effectiveStatus === 'free' ? 'Toca para empezar un pedido' : 'Mesa reservada'}
+              </CardDescription>
+            </div>
+            <Badge variant="outline" className={cn("text-sm whitespace-nowrap", statusMap[effectiveStatus].className)}>
+              {statusMap[effectiveStatus].text}
+            </Badge>
           </div>
-          <Badge variant="outline" className={cn("text-sm whitespace-nowrap", statusMap[effectiveStatus].className)}>
-            {statusMap[effectiveStatus].text}
-          </Badge>
-        </div>
-      </CardHeader>
+        </CardHeader>
+      </LinkWrapper>
       {role === 'waiter' && (
-        <CardFooter className="p-2 pt-0">
+        <CardFooter className="p-2 pt-0 mt-auto">
           <DeleteTableButton tableId={table.id} tableName={table.name} isEnabled={effectiveStatus === 'free'} />
         </CardFooter>
       )}
     </Card>
-  );
-
-  if (!isClickable) {
-    return <div className="h-full cursor-not-allowed">{cardContent}</div>;
-  }
-
-  return (
-    <Link href={`/${role}/table/${table.id}`} className="h-full block">
-      {cardContent}
-    </Link>
   );
 }
