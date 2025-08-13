@@ -14,7 +14,7 @@ export default function CashierTablePage({ params }: { params: { id: string } })
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title={`Cobrar ${table.name}`} />
+      <AppHeader title={`Cobrar ${table.name}`} showBackButton={true} />
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         <PaymentProcessor table={table} />
       </main>

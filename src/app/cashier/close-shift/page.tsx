@@ -15,7 +15,7 @@ export default function CloseShiftPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title="Cierre de Caja">
+      <AppHeader title="Cierre de Caja" showBackButton={true}>
         <div className="flex items-center gap-4">
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" />

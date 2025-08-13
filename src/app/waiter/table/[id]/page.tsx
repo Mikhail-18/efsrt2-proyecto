@@ -13,7 +13,7 @@ export default function WaiterTablePage({ params }: { params: { id: string } }) 
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader title={`Pedido para ${table.name}`} />
+      <AppHeader title={`Pedido para ${table.name}`} showBackButton={true} />
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         <OrderTaker table={table} />
       </main>
