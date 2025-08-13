@@ -29,6 +29,11 @@ interface LoginFormProps {
     employees: Employee[];
 }
 
+const roleMap = {
+  waiter: 'Camarero',
+  cashier: 'Cajero',
+};
+
 export function LoginForm({ employees }: LoginFormProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -121,7 +126,12 @@ export function LoginForm({ employees }: LoginFormProps) {
                     </SelectTrigger>
                     <SelectContent>
                         {employees.map(employee => (
-                            <SelectItem key={employee.id} value={employee.id}>{employee.name}</SelectItem>
+                            <SelectItem key={employee.id} value={employee.id}>
+                                <div className="flex justify-between w-full">
+                                    <span>{employee.name}</span>
+                                    <span className="text-muted-foreground">{roleMap[employee.role]}</span>
+                                </div>
+                            </SelectItem>
                         ))}
                     </SelectContent>
                     </Select>
