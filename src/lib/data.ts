@@ -29,7 +29,16 @@ export interface Transaction {
   timestamp: Date;
 }
 
-export const menu: MenuItem[] = [
+
+// This is a workaround to simulate a database in a development/serverless environment
+// where module-level variables can be re-initialized on each request/hot-reload.
+declare global {
+  var tables: Table[] | undefined;
+  var transactions: Transaction[] | undefined;
+  var menu: MenuItem[] | undefined;
+}
+
+const initialMenu: MenuItem[] = [
   // Entradas
   { id: '1', name: 'Ceviche Clásico', price: 18.00, category: 'Entradas' },
   { id: '2', name: 'Causa Limeña', price: 14.00, category: 'Entradas' },
@@ -48,32 +57,26 @@ export const menu: MenuItem[] = [
   { id: '12', name: 'Pisco Sour', price: 10.00, category: 'Bebidas' },
 ];
 
-// This is a workaround to simulate a database in a development/serverless environment
-// where module-level variables can be re-initialized on each request/hot-reload.
-declare global {
-  var tables: Table[] | undefined;
-  var transactions: Transaction[] | undefined;
-}
 
 const initialTables: Table[] = [
   { id: 1, name: "Mesa 1", status: "free", order: [] },
   { id: 2, name: "Mesa 2", status: "occupied", order: [
-      { ...menu[3], quantity: 1, notes: 'Término medio' },
-      { ...menu[4], quantity: 1, notes: '' },
-      { ...menu[10], quantity: 2, notes: 'Con hielo' },
+      { ...initialMenu[3], quantity: 1, notes: 'Término medio' },
+      { ...initialMenu[4], quantity: 1, notes: '' },
+      { ...initialMenu[10], quantity: 2, notes: 'Con hielo' },
   ] },
   { id: 3, name: "Mesa 3", status: "free", order: [] },
   { id: 4, name: "Mesa 4", status: "reserved", order: [] },
   { id: 5, name: "Mesa 5", status: "occupied", order: [
-      { ...menu[0], quantity: 2, notes: 'Sin ají' },
-      { ...menu[9], quantity: 1, notes: '' },
-      { ...menu[11], quantity: 1, notes: '' },
+      { ...initialMenu[0], quantity: 2, notes: 'Sin ají' },
+      { ...initialMenu[9], quantity: 1, notes: '' },
+      { ...initialMenu[11], quantity: 1, notes: '' },
   ] },
   { id: 6, name: "Mesa 6", status: "free", order: [] },
   { id: 7, name: "Mesa 7", status: "free", order: [] },
   { id: 8, name: "Mesa 8", status: "occupied", order: [
-      { ...menu[6], quantity: 2, notes: '' },
-      { ...menu[7], quantity: 2, notes: 'Miel extra' },
+      { ...initialMenu[6], quantity: 2, notes: '' },
+      { ...initialMenu[7], quantity: 2, notes: 'Miel extra' },
   ] },
   { id: 9, name: "Mesa 9", status: "free", order: [] },
   { id: 10, name: "Mesa 10", status: "reserved", order: [] },
@@ -82,6 +85,12 @@ const initialTables: Table[] = [
 ];
 
 // Use a global variable to preserve the state across hot reloads in development.
+if (!global.menu) {
+  global.menu = JSON.parse(JSON.stringify(initialMenu));
+}
+export const menu: MenuItem[] = global.menu as MenuItem[];
+
+
 if (!global.tables) {
   // Deep clone to prevent mutations from affecting the initial data object on subsequent reloads.
   global.tables = JSON.parse(JSON.stringify(initialTables));
