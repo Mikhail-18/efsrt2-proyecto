@@ -115,6 +115,7 @@ export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string 
         if (index > -1) {
             menu[index] = { ...menu[index], ...data, id: data.id };
             revalidatePath('/admin/menu');
+            revalidatePath('/waiter', 'layout');
             return { success: true, menuItem: menu[index] };
         }
         return { success: false, message: 'Artículo no encontrado.' };
@@ -126,6 +127,7 @@ export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string 
         };
         menu.push(newMenuItem);
         revalidatePath('/admin/menu');
+        revalidatePath('/waiter', 'layout');
         return { success: true, menuItem: newMenuItem };
     }
 }
@@ -135,6 +137,7 @@ export async function deleteMenuItem(itemId: string) {
     if (index > -1) {
         menu.splice(index, 1);
         revalidatePath('/admin/menu');
+        revalidatePath('/waiter', 'layout');
         return { success: true };
     }
     return { success: false, message: 'Artículo no encontrado.' };
