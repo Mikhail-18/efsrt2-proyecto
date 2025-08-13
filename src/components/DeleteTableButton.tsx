@@ -45,11 +45,10 @@ export function DeleteTableButton({ tableId, tableName, isEnabled }: DeleteTable
       }
     });
   };
-
-  const handleTriggerClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  
+  const handleDialogInteraction = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
-  };
+  }
 
   return (
     <AlertDialog>
@@ -59,13 +58,13 @@ export function DeleteTableButton({ tableId, tableName, isEnabled }: DeleteTable
           size="sm"
           className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
           disabled={!isEnabled || isPending}
-          onClick={handleTriggerClick}
+          onClick={handleDialogInteraction}
         >
           <Trash2 className="mr-2 h-4 w-4" />
           {isPending ? 'Eliminando...' : 'Eliminar Mesa'}
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+      <AlertDialogContent onClick={handleDialogInteraction}>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
           <AlertDialogDescription>
