@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -20,7 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { LogIn } from "lucide-react";
+import { LogIn, Shield } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 export function LoginForm() {
   const router = useRouter();
@@ -69,7 +71,28 @@ export function LoginForm() {
             </CardDescription>
         </CardHeader>
         <CardContent>
-            <form onSubmit={handleSubmit} className="grid gap-4">
+            <div className="grid gap-4">
+                 <Button asChild variant="outline">
+                    <Link href="/admin">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Ingresar como Administrador
+                    </Link>
+                </Button>
+
+                <div className="relative">
+                    <Separator />
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                        O inicia sesión como empleado
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="grid gap-4 mt-4">
                 <div className="grid gap-2">
                     <Label htmlFor="role">Rol</Label>
                     <Select onValueChange={setRole} value={role}>
