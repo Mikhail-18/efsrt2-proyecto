@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import type { Table, TableStatus } from '@/lib/data';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { DeleteTableButton } from './DeleteTableButton';
 
 type TableCardProps = {
   table: Table;
@@ -23,26 +24,33 @@ export function TableCard({ table, role }: TableCardProps) {
   
   const cardContent = (
     <Card className={cn(
-      "h-full transition-all duration-300 shadow-md",
-      isClickable && "hover:shadow-lg hover:border-primary/50 cursor-pointer",
-      !isClickable && "bg-muted/50 cursor-not-allowed"
+      "h-full transition-all duration-300 shadow-md flex flex-col",
+      isClickable && "hover:shadow-lg hover:border-primary/50",
+      !isClickable && "bg-muted/50"
     )}>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="font-headline text-2xl">{table.name}</CardTitle>
-          <Badge variant="outline" className={cn("text-sm", statusMap[effectiveStatus].className)}>
+      <CardHeader className="flex-grow">
+        <div className="flex justify-between items-start">
+          <div className='flex-1'>
+            <CardTitle className="font-headline text-2xl">{table.name}</CardTitle>
+            <CardDescription className="pt-2">
+              {effectiveStatus === 'occupied' ? `${table.order.length} artículo(s) en el pedido` : effectiveStatus === 'free' ? 'Toca para empezar un pedido' : 'Mesa reservada'}
+            </CardDescription>
+          </div>
+          <Badge variant="outline" className={cn("text-sm whitespace-nowrap", statusMap[effectiveStatus].className)}>
             {statusMap[effectiveStatus].text}
           </Badge>
         </div>
-        <CardDescription className="pt-2">
-          {effectiveStatus === 'occupied' ? `${table.order.length} artículo(s) en el pedido` : 'Toca para empezar un pedido'}
-        </CardDescription>
       </CardHeader>
+      {role === 'waiter' && (
+        <CardFooter className="p-2 pt-0">
+          <DeleteTableButton tableId={table.id} tableName={table.name} isEnabled={effectiveStatus === 'free'} />
+        </CardFooter>
+      )}
     </Card>
   );
 
   if (!isClickable) {
-    return cardContent;
+    return <div className="h-full cursor-not-allowed">{cardContent}</div>;
   }
 
   return (

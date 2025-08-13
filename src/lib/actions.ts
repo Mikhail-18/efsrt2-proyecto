@@ -16,6 +16,21 @@ export async function addTable() {
     return { success: true, newTable };
 }
 
+export async function deleteTable(tableId: number) {
+    const tableIndex = tables.findIndex(t => t.id === tableId);
+    if (tableIndex > -1) {
+        if (tables[tableIndex].status !== 'free') {
+            return { success: false, message: 'No se puede eliminar una mesa ocupada o reservada.' };
+        }
+        tables.splice(tableIndex, 1);
+        revalidatePath('/waiter');
+        revalidatePath('/cashier');
+        return { success: true };
+    }
+    return { success: false, message: 'Mesa no encontrada.' };
+}
+
+
 export async function updateOrder(tableId: number, newOrder: OrderItem[]) {
   const table = tables.find(t => t.id === tableId);
 
@@ -47,6 +62,7 @@ export async function finalizePayment(tableId: number) {
         
         revalidatePath('/waiter');
         revalidatePath('/cashier');
+        revalidatePath(`/cashier/table/${tableId}`);
         
         return { success: true };
     }
