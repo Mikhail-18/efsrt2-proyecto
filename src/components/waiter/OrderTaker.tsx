@@ -189,7 +189,8 @@ export function OrderTaker({ table }: OrderTakerProps) {
     });
   }
 
-  const menuCategories = Array.from(new Set(menu.map(item => item.category)));
+  const currentMenu = menu;
+  const menuCategories = Array.from(new Set(currentMenu.map(item => item.category)));
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-4rem-1px)]">
@@ -203,7 +204,7 @@ export function OrderTaker({ table }: OrderTakerProps) {
                   {category}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {menu.filter(item => item.category === category).map(item => (
+                  {currentMenu.filter(item => item.category === category).map(item => (
                     <MenuItemCard key={item.id} item={item} onAddToOrder={handleAddToOrder} disabled={isPending} />
                   ))}
                 </div>
