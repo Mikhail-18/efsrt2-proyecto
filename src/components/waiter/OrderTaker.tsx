@@ -1,7 +1,7 @@
 "use client";
 
 import type { FC } from 'react';
-import React, { useState, useTransition, useMemo } from 'react';
+import React, { useState, useTransition, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Table, MenuItem, OrderItem } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -118,6 +118,13 @@ export function OrderTaker({ table, menuItems }: OrderTakerProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const [waiterName, setWaiterName] = useState<string | null>(null);
+
+  useEffect(() => {
+    // This runs on the client after hydration
+    const name = localStorage.getItem('loggedInEmployeeName');
+    setWaiterName(name);
+  }, []);
 
   const handleUpdateServerOrder = useMemo(() => {
     let timeoutId: NodeJS.Timeout;
@@ -125,18 +132,17 @@ export function OrderTaker({ table, menuItems }: OrderTakerProps) {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(async () => {
         try {
-          await updateOrder(table.id, newOrder);
+          await updateOrder(table.id, newOrder, waiterName ?? undefined);
         } catch (error) {
           toast({
             title: "Error de Sincronización",
             description: "No se pudieron guardar los últimos cambios en el servidor.",
             variant: "destructive",
           });
-          // Potentially revert local state to `table.order` here if strict consistency is needed
         }
       }, 500); // Debounce requests
     };
-  }, [table.id, toast]);
+  }, [table.id, toast, waiterName]);
 
 
   const handleUpdateItem = (itemId: string, quantity: number, notes?: string) => {
@@ -173,7 +179,7 @@ export function OrderTaker({ table, menuItems }: OrderTakerProps) {
   const handleSendToKitchen = () => {
     startTransition(async () => {
         try {
-            await updateOrder(table.id, order); // Final sync before leaving
+            await updateOrder(table.id, order, waiterName ?? undefined); // Final sync before leaving
             toast({
                 title: "Pedido Enviado",
                 description: `El pedido de la ${table.name} ha sido enviado a la cocina.`,

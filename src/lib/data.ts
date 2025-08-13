@@ -17,6 +17,7 @@ export interface Table {
   name: string;
   status: TableStatus;
   order: OrderItem[];
+  waiterName?: string;
 }
 
 export interface Transaction {
@@ -74,20 +75,20 @@ const initialTables: Table[] = [
       { ...initialMenu[3], quantity: 1, notes: 'Término medio' },
       { ...initialMenu[4], quantity: 1, notes: '' },
       { ...initialMenu[10], quantity: 2, notes: 'Con hielo' },
-  ] },
+  ], waiterName: 'Juan Pérez' },
   { id: 3, name: "Mesa 3", status: "free", order: [] },
   { id: 4, name: "Mesa 4", status: "reserved", order: [] },
   { id: 5, name: "Mesa 5", status: "occupied", order: [
       { ...initialMenu[0], quantity: 2, notes: 'Sin ají' },
       { ...initialMenu[9], quantity: 1, notes: '' },
       { ...initialMenu[11], quantity: 1, notes: '' },
-  ] },
+  ], waiterName: 'Carlos Rivas' },
   { id: 6, name: "Mesa 6", status: "free", order: [] },
   { id: 7, name: "Mesa 7", status: "free", order: [] },
   { id: 8, name: "Mesa 8", status: "occupied", order: [
       { ...initialMenu[6], quantity: 2, notes: '' },
       { ...initialMenu[7], quantity: 2, notes: 'Miel extra' },
-  ] },
+  ], waiterName: 'Juan Pérez' },
   { id: 9, name: "Mesa 9", status: "free", order: [] },
   { id: 10, name: "Mesa 10", status: "reserved", order: [] },
   { id: 11, name: "Mesa 11", status: "free", order: [] },

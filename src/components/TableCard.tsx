@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import type { Table, TableStatus } from '@/lib/data';
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { DeleteTableButton } from './DeleteTableButton';
+import { User } from 'lucide-react';
 
 type TableCardProps = {
   table: Table;
@@ -43,6 +44,12 @@ export function TableCard({ table, role }: TableCardProps) {
           </div>
         </CardHeader>
       </LinkWrapper>
+       {effectiveStatus === 'occupied' && table.waiterName && (
+         <CardContent className="p-4 pt-0 text-sm text-muted-foreground flex items-center">
+            <User className="w-4 h-4 mr-2" />
+            Atendido por: {table.waiterName}
+         </CardContent>
+       )}
       {role === 'waiter' && (
         <CardFooter className="p-2 pt-0 mt-auto">
           <DeleteTableButton tableId={table.id} tableName={table.name} isEnabled={effectiveStatus === 'free'} />

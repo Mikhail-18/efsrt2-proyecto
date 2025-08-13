@@ -80,6 +80,10 @@ export function LoginForm({ employees }: LoginFormProps) {
 
     setTimeout(() => {
       if (employee && employee.pin === pin) {
+        // Store user info in localStorage
+        localStorage.setItem('loggedInEmployeeId', employee.id);
+        localStorage.setItem('loggedInEmployeeName', employee.name);
+
         if (employee.role === "waiter") {
             router.push("/waiter");
         } else if (employee.role === "cashier") {
@@ -104,6 +108,8 @@ export function LoginForm({ employees }: LoginFormProps) {
             title: "Acceso Concedido",
             description: "Bienvenido, Administrador.",
         });
+        localStorage.setItem('loggedInEmployeeId', 'admin');
+        localStorage.setItem('loggedInEmployeeName', 'Admin');
         router.push("/admin");
     } else {
         toast({

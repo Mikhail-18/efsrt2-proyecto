@@ -33,22 +33,23 @@ export async function deleteTable(tableId: number) {
 
 
 // Order Actions
-export async function updateOrder(tableId: number, newOrder: OrderItem[]) {
+export async function updateOrder(tableId: number, newOrder: OrderItem[], waiterName?: string) {
   const table = tables.find(t => t.id === tableId);
 
   if (table) {
     table.order = newOrder;
     if (newOrder.length > 0) {
       table.status = 'occupied';
+      if (waiterName) {
+        table.waiterName = waiterName;
+      }
     } else {
       table.status = 'free';
+      table.waiterName = undefined;
     }
     
     // Revalidate paths to reflect changes
-    revalidatePath('/waiter');
-    revalidatePath(`/waiter/table/${tableId}`);
-    revalidatePath('/cashier');
-    revalidatePath(`/cashier/table/${tableId}`);
+    revalidatePath('/', 'layout');
     
     return { success: true, table };
   }
@@ -62,6 +63,7 @@ export async function finalizePayment(tableId: number) {
     if (table) {
         table.order = [];
         table.status = 'free';
+        table.waiterName = undefined;
         
         revalidatePath('/waiter');
         revalidatePath('/cashier');
