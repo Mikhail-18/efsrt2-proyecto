@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -21,8 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { LogIn, Shield } from "lucide-react";
-import { Separator } from "./ui/separator";
+import { LogIn } from "lucide-react";
 
 export function LoginForm() {
   const router = useRouter();
@@ -62,28 +60,16 @@ export function LoginForm() {
     }, 500);
   };
 
-  const handleAdminLogin = () => {
-    router.push('/admin');
-  }
-
   return (
     <Card className="w-full max-w-sm shadow-lg">
         <CardHeader className="text-center">
             <CardTitle className="text-3xl font-headline">Bienvenido</CardTitle>
             <CardDescription>
-                Ingresa para gestionar tu turno.
+                Ingresa con tu rol y PIN para gestionar tu turno.
             </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
-             <Button variant="outline" onClick={handleAdminLogin}>
-                <Shield className="mr-2 h-4 w-4" />
-                Ingreso Admin
-            </Button>
-            <div className="relative">
-                <Separator />
-                <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 bg-card px-2 text-xs text-muted-foreground">O</span>
-            </div>
-            <form onSubmit={handleSubmit} className="grid gap-4 pt-2">
+        <CardContent>
+            <form onSubmit={handleSubmit} className="grid gap-4">
                 <div className="grid gap-2">
                     <Label htmlFor="role">Rol</Label>
                     <Select onValueChange={setRole} value={role}>
