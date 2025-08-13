@@ -1,6 +1,6 @@
 import { AppHeader } from '@/components/AppHeader';
 import { OrderTaker } from '@/components/waiter/OrderTaker';
-import { getTableById } from '@/lib/data';
+import { getTableById, menu } from '@/lib/data';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -13,11 +13,13 @@ export default function WaiterTablePage({ params }: { params: { id: string } }) 
     notFound();
   }
 
+  const menuItems = menu;
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader title={`Pedido para ${table.name}`} showBackButton={true} />
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-        <OrderTaker table={table} />
+        <OrderTaker table={table} menuItems={menuItems} />
       </main>
     </div>
   );

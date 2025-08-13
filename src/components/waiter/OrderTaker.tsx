@@ -4,7 +4,6 @@ import type { FC } from 'react';
 import React, { useState, useTransition, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Table, MenuItem, OrderItem } from '@/lib/data';
-import { menu } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,6 +15,7 @@ import { Input } from '@/components/ui/input';
 
 interface OrderTakerProps {
   table: Table;
+  menuItems: MenuItem[];
 }
 
 const categoryIcons: Record<MenuItem['category'], React.ReactNode> = {
@@ -113,7 +113,7 @@ const OrderSummary: FC<{
 };
 
 
-export function OrderTaker({ table }: OrderTakerProps) {
+export function OrderTaker({ table, menuItems }: OrderTakerProps) {
   const [order, setOrder] = useState<OrderItem[]>(table.order);
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -189,8 +189,7 @@ export function OrderTaker({ table }: OrderTakerProps) {
     });
   }
 
-  const currentMenu = menu;
-  const menuCategories = Array.from(new Set(currentMenu.map(item => item.category)));
+  const menuCategories = Array.from(new Set(menuItems.map(item => item.category)));
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-4rem-1px)]">
@@ -204,7 +203,7 @@ export function OrderTaker({ table }: OrderTakerProps) {
                   {category}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {currentMenu.filter(item => item.category === category).map(item => (
+                  {menuItems.filter(item => item.category === category).map(item => (
                     <MenuItemCard key={item.id} item={item} onAddToOrder={handleAddToOrder} disabled={isPending} />
                   ))}
                 </div>
