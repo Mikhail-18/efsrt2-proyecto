@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { LoginForm } from '@/components/LoginForm';
 
 export default function Home() {
@@ -10,6 +11,11 @@ export default function Home() {
         </p>
       </div>
       <LoginForm />
+      <div className='text-center mt-4'>
+        <p className='text-sm text-muted-foreground'>
+            ¿Eres el dueño? <Link href="/admin" className='underline'>Ingresa al panel de administración</Link>
+        </p>
+      </div>
     </main>
   );
 }
