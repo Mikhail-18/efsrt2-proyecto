@@ -3,6 +3,19 @@
 import { revalidatePath } from 'next/cache';
 import { tables, type OrderItem, transactions } from './data';
 
+export async function addTable() {
+    const newTableId = tables.length > 0 ? Math.max(...tables.map(t => t.id)) + 1 : 1;
+    const newTable = {
+        id: newTableId,
+        name: `Mesa ${newTableId}`,
+        status: 'free' as const,
+        order: [],
+    };
+    tables.push(newTable);
+    revalidatePath('/waiter');
+    return { success: true, newTable };
+}
+
 export async function updateOrder(tableId: number, newOrder: OrderItem[]) {
   const table = tables.find(t => t.id === tableId);
 

@@ -1,6 +1,7 @@
 import { AppHeader } from '@/components/AppHeader';
 import { TableCard } from '@/components/TableCard';
 import { tables } from '@/lib/data';
+import { AddTableCard } from '@/components/AddTableCard';
 
 export default function WaiterDashboard() {
   return (
@@ -11,6 +12,7 @@ export default function WaiterDashboard() {
           {tables.map(table => (
             <TableCard key={table.id} table={table} role="waiter" />
           ))}
+          <AddTableCard />
         </div>
       </main>
     </div>
