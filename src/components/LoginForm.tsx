@@ -20,6 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast";
 import { LogIn, Shield, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -34,14 +44,18 @@ const roleMap = {
   cashier: 'Cajero',
 };
 
+const ADMIN_PIN = "0000"; // Simple hardcoded PIN for admin
+
 export function LoginForm({ employees }: LoginFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [pin, setPin] = useState("");
+  const [adminPin, setAdminPin] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdminDialogOpen, setIsAdminDialogOpen] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleEmployeeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEmployeeId) {
       toast({
@@ -81,6 +95,27 @@ export function LoginForm({ employees }: LoginFormProps) {
       setIsLoading(false);
     }, 500);
   };
+  
+  const handleAdminSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    if (adminPin === ADMIN_PIN) {
+        toast({
+            title: "Acceso Concedido",
+            description: "Bienvenido, Administrador.",
+        });
+        router.push("/admin");
+    } else {
+        toast({
+            title: "Acceso Denegado",
+            description: "El PIN de administrador es incorrecto.",
+            variant: "destructive",
+        });
+    }
+    setIsLoading(false);
+    setAdminPin("");
+    setIsAdminDialogOpen(false);
+  }
 
   return (
     <Card className="w-full max-w-sm shadow-lg">
@@ -92,12 +127,48 @@ export function LoginForm({ employees }: LoginFormProps) {
         </CardHeader>
         <CardContent>
             <div className="grid gap-4">
-                 <Button asChild variant="outline">
-                    <Link href="/admin">
-                        <Shield className="mr-2 h-4 w-4" />
-                        Ingresar como Administrador
-                    </Link>
-                </Button>
+                 <Dialog open={isAdminDialogOpen} onOpenChange={setIsAdminDialogOpen}>
+                    <DialogTrigger asChild>
+                         <Button variant="outline">
+                            <Shield className="mr-2 h-4 w-4" />
+                            Ingresar como Administrador
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                        <form onSubmit={handleAdminSubmit}>
+                            <DialogHeader>
+                                <DialogTitle>Acceso de Administrador</DialogTitle>
+                                <DialogDescription>
+                                    Ingresa el PIN de administrador para continuar.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex items-center space-x-2 my-4">
+                               <div className="grid flex-1 gap-2">
+                                    <Label htmlFor="admin-pin" className="sr-only">
+                                        PIN de Administrador
+                                    </Label>
+                                    <Input
+                                        id="admin-pin"
+                                        type="password"
+                                        placeholder="••••"
+                                        value={adminPin}
+                                        onChange={(e) => setAdminPin(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter className="sm:justify-end">
+                                <DialogClose asChild>
+                                    <Button type="button" variant="secondary">
+                                        Cancelar
+                                    </Button>
+                                </DialogClose>
+                                 <Button type="submit" disabled={isLoading}>
+                                    {isLoading ? "Verificando..." : "Verificar"}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                 </Dialog>
 
                 <div className="relative">
                     <Separator />
@@ -112,7 +183,7 @@ export function LoginForm({ employees }: LoginFormProps) {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid gap-4 mt-4">
+            <form onSubmit={handleEmployeeSubmit} className="grid gap-4 mt-4">
                 <div className="grid gap-2">
                     <Label htmlFor="employee">Empleado</Label>
                     <Select onValueChange={setSelectedEmployeeId} value={selectedEmployeeId}>
@@ -127,7 +198,7 @@ export function LoginForm({ employees }: LoginFormProps) {
                     <SelectContent>
                         {employees.map(employee => (
                             <SelectItem key={employee.id} value={employee.id}>
-                                {employee.name} ({roleMap[employee.role]})
+                               {employee.name} <span className="text-muted-foreground ml-2">({roleMap[employee.role]})</span>
                             </SelectItem>
                         ))}
                     </SelectContent>
