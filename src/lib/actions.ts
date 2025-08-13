@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { tables, type OrderItem, transactions, menu, type MenuItem } from './data';
+import { tables, type OrderItem, transactions, menu, type MenuItem, employees, type Employee } from './data';
 
 // Table Actions
 export async function addTable() {
@@ -103,11 +103,12 @@ export async function processPayment(tableId: number, paymentMethod: string) {
 export async function clearTransactions() {
     transactions.length = 0;
     revalidatePath('/cashier/close-shift');
+    revalidatePath('/admin/close-shift');
     return { success: true };
 }
 
 
-// Admin Actions
+// Admin Actions - Menu
 export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string }) {
     let updatedMenuItem: MenuItem | undefined;
 
@@ -145,4 +146,42 @@ export async function deleteMenuItem(itemId: string) {
         return { success: true };
     }
     return { success: false, message: 'Artículo no encontrado.' };
+}
+
+// Admin Actions - Employees
+export async function upsertEmployee(data: Omit<Employee, 'id'> & { id?: string }) {
+    let updatedEmployee: Employee | undefined;
+
+    if (data.id) {
+        const index = employees.findIndex(emp => emp.id === data.id);
+        if (index > -1) {
+            employees[index] = { ...employees[index], ...data, id: data.id };
+            updatedEmployee = employees[index];
+        }
+    } else {
+        const newEmployee: Employee = {
+            ...data,
+            id: `emp-${Date.now()}`,
+        };
+        employees.push(newEmployee);
+        updatedEmployee = newEmployee;
+    }
+
+    revalidatePath('/admin/employees');
+
+    if (updatedEmployee) {
+        return { success: true, employee: updatedEmployee };
+    }
+
+    return { success: false, message: 'No se pudo crear o encontrar el empleado.' };
+}
+
+export async function deleteEmployee(employeeId: string) {
+    const index = employees.findIndex(emp => emp.id === employeeId);
+    if (index > -1) {
+        employees.splice(index, 1);
+        revalidatePath('/admin/employees');
+        return { success: true };
+    }
+    return { success: false, message: 'Empleado no encontrado.' };
 }

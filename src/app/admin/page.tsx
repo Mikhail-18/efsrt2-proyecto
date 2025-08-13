@@ -31,10 +31,10 @@ export default function AdminDashboard() {
     {
       title: 'Gestionar Empleados',
       description: 'Administra los roles y accesos del personal.',
-      href: '#',
+      href: '/admin/employees',
       icon: <Users className="h-8 w-8 text-primary" />,
-      cta: 'Ir a Empleados (Próximamente)',
-      disabled: true,
+      cta: 'Ir a Empleados',
+      disabled: false,
     },
   ];
 

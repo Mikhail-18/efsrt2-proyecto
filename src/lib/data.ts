@@ -29,6 +29,15 @@ export interface Transaction {
   timestamp: Date;
 }
 
+export type EmployeeRole = 'waiter' | 'cashier';
+
+export interface Employee {
+    id: string;
+    name: string;
+    role: EmployeeRole;
+    pin: string;
+}
+
 
 // This is a workaround to simulate a database in a development/serverless environment
 // where module-level variables can be re-initialized on each request/hot-reload.
@@ -36,6 +45,7 @@ declare global {
   var tables: Table[] | undefined;
   var transactions: Transaction[] | undefined;
   var menu: MenuItem[] | undefined;
+  var employees: Employee[] | undefined;
 }
 
 const initialMenu: MenuItem[] = [
@@ -84,6 +94,12 @@ const initialTables: Table[] = [
   { id: 12, name: "Mesa 12", status: "free", order: [] },
 ];
 
+const initialEmployees: Employee[] = [
+    { id: 'emp-1', name: 'Juan Pérez', role: 'waiter', pin: '1234' },
+    { id: 'emp-2', name: 'María García', role: 'cashier', pin: '5678' },
+    { id: 'emp-3', name: 'Carlos Rivas', role: 'waiter', pin: '1111' },
+];
+
 // Use a global variable to preserve the state across hot reloads in development.
 if (!global.menu) {
   global.menu = JSON.parse(JSON.stringify(initialMenu));
@@ -101,6 +117,11 @@ if (!global.transactions) {
     global.transactions = [];
 }
 export const transactions: Transaction[] = global.transactions as Transaction[];
+
+if (!global.employees) {
+    global.employees = JSON.parse(JSON.stringify(initialEmployees));
+}
+export const employees: Employee[] = global.employees as Employee[];
 
 
 export const getTableById = (id: number): Table | undefined => {
