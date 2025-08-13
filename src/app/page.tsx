@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { AdminLoginForm } from '@/components/AdminLoginForm';
+import { Button } from '@/components/ui/button';
+import { Shield } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -10,7 +11,12 @@ export default function Home() {
           Optimiza la atención al cliente en tu restaurante.
         </p>
       </div>
-      <AdminLoginForm />
+       <Button asChild size="lg">
+        <Link href="/admin">
+            <Shield className="mr-2 h-5 w-5" />
+            Ingresar como Administrador
+        </Link>
+      </Button>
       <div className='text-center mt-4'>
         <p className='text-sm text-muted-foreground'>
             ¿No eres el dueño? <Link href="/login" className='underline'>Ingresa como empleado</Link>
