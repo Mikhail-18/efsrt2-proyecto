@@ -109,11 +109,14 @@ export async function clearTransactions() {
 
 // Admin Actions
 export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string }) {
+    let updatedMenuItem: MenuItem | undefined;
+
     if (data.id) {
         // Update existing item
         const index = menu.findIndex(item => item.id === data.id);
         if (index > -1) {
             menu[index] = { ...menu[index], ...data, id: data.id };
+            updatedMenuItem = menu[index];
         }
     } else {
         // Create new item
@@ -122,17 +125,18 @@ export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string 
             id: `${Date.now()}-${data.name.slice(0, 3)}`,
         };
         menu.push(newMenuItem);
+        updatedMenuItem = newMenuItem;
     }
     
+    // Revalidate all relevant paths to ensure data is fresh everywhere.
     revalidatePath('/admin/menu');
-    revalidatePath('/waiter', 'layout'); // This is one of the most impactful revalidations.
+    revalidatePath('/waiter');
+    
+    // Most importantly, revalidate the specific table/order pages.
+    // We can use 'page' to be more specific, but 'layout' is more aggressive
+    // and might be needed to bust the cache. Let's try layout first.
+    revalidatePath('/waiter/table', 'layout');
 
-    // Let's also try revalidating the specific page just in case.
-    for (const table of tables) {
-        revalidatePath(`/waiter/table/${table.id}`);
-    }
-
-    const updatedMenuItem = data.id ? menu.find(item => item.id === data.id) : menu[menu.length - 1];
 
     if (updatedMenuItem) {
         return { success: true, menuItem: updatedMenuItem };
@@ -147,6 +151,7 @@ export async function deleteMenuItem(itemId: string) {
         menu.splice(index, 1);
         revalidatePath('/admin/menu');
         revalidatePath('/waiter', 'layout');
+        revalidatePath('/waiter/table', 'layout');
         return { success: true };
     }
     return { success: false, message: 'Artículo no encontrado.' };
