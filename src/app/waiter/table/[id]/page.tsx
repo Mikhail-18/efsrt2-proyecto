@@ -1,3 +1,5 @@
+'use client';
+
 import { AppHeader } from '@/components/AppHeader';
 import { OrderTaker } from '@/components/waiter/OrderTaker';
 import { getTableById } from '@/lib/data';

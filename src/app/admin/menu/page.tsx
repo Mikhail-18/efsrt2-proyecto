@@ -13,7 +13,11 @@ import { MenuItemDialog } from '@/components/admin/MenuItemDialog';
 import { DeleteMenuItemButton } from '@/components/admin/DeleteMenuItemButton';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default function MenuManagementPage() {
+  const currentMenu = menu;
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -47,7 +51,7 @@ export default function MenuManagementPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {menu.map((item) => (
+            {currentMenu.map((item) => (
               <TableRow key={item.id}>
                 <TableCell className="font-medium">{item.name}</TableCell>
                 <TableCell>{item.category}</TableCell>
@@ -62,7 +66,7 @@ export default function MenuManagementPage() {
             ))}
           </TableBody>
         </Table>
-         {menu.length === 0 && (
+         {currentMenu.length === 0 && (
             <div className="text-center p-8 text-muted-foreground">
                 No hay artículos en el menú. ¡Añade uno para empezar!
             </div>

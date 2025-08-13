@@ -128,8 +128,7 @@ export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string 
         updatedMenuItem = newMenuItem;
     }
     
-    revalidatePath('/admin', 'layout');
-    revalidatePath('/waiter', 'layout');
+    revalidatePath('/', 'layout');
 
     if (updatedMenuItem) {
         return { success: true, menuItem: updatedMenuItem };
@@ -142,8 +141,7 @@ export async function deleteMenuItem(itemId: string) {
     const index = menu.findIndex(item => item.id === itemId);
     if (index > -1) {
         menu.splice(index, 1);
-        revalidatePath('/admin/menu');
-        revalidatePath('/waiter', 'layout');
+        revalidatePath('/', 'layout');
         return { success: true };
     }
     return { success: false, message: 'Artículo no encontrado.' };
