@@ -128,15 +128,8 @@ export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string 
         updatedMenuItem = newMenuItem;
     }
     
-    // Revalidate all relevant paths to ensure data is fresh everywhere.
-    revalidatePath('/admin/menu');
-    revalidatePath('/waiter');
-    
-    // Most importantly, revalidate the specific table/order pages.
-    // We can use 'page' to be more specific, but 'layout' is more aggressive
-    // and might be needed to bust the cache. Let's try layout first.
-    revalidatePath('/waiter/table', 'layout');
-
+    revalidatePath('/admin', 'layout');
+    revalidatePath('/waiter', 'layout');
 
     if (updatedMenuItem) {
         return { success: true, menuItem: updatedMenuItem };
@@ -151,7 +144,6 @@ export async function deleteMenuItem(itemId: string) {
         menu.splice(index, 1);
         revalidatePath('/admin/menu');
         revalidatePath('/waiter', 'layout');
-        revalidatePath('/waiter/table', 'layout');
         return { success: true };
     }
     return { success: false, message: 'Artículo no encontrado.' };

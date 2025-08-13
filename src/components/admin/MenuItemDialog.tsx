@@ -26,7 +26,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import type { MenuItem } from '@/lib/data';
 import { upsertMenuItem } from '@/lib/actions';
-import { menu } from '@/lib/data';
 
 const menuCategories = ['Entradas', 'Platos Principales', 'Postres', 'Bebidas'] as const;
 
