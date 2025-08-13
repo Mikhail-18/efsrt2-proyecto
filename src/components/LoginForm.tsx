@@ -127,10 +127,7 @@ export function LoginForm({ employees }: LoginFormProps) {
                     <SelectContent>
                         {employees.map(employee => (
                             <SelectItem key={employee.id} value={employee.id}>
-                                <div className="flex justify-between w-full">
-                                    <span>{employee.name}</span>
-                                    <span className="text-muted-foreground">{roleMap[employee.role]}</span>
-                                </div>
+                                {employee.name} ({roleMap[employee.role]})
                             </SelectItem>
                         ))}
                     </SelectContent>
