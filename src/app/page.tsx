@@ -1,4 +1,5 @@
 import { LoginForm } from '@/components/LoginForm';
+import { employees } from '@/lib/data';
 
 export default function Home() {
   return (
@@ -9,7 +10,7 @@ export default function Home() {
           Optimiza la atención al cliente en tu restaurante.
         </p>
       </div>
-      <LoginForm />
+      <LoginForm employees={employees} />
     </main>
   );
 }

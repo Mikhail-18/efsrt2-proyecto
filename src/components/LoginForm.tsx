@@ -21,22 +21,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { LogIn, Shield } from "lucide-react";
+import { LogIn, Shield, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import type { Employee } from "@/lib/data";
 
-export function LoginForm() {
+interface LoginFormProps {
+    employees: Employee[];
+}
+
+export function LoginForm({ employees }: LoginFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [role, setRole] = useState("");
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [pin, setPin] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!role) {
+    if (!selectedEmployeeId) {
       toast({
         title: "Error de Validación",
-        description: "Por favor, selecciona un rol.",
+        description: "Por favor, selecciona un empleado.",
         variant: "destructive",
       });
       return;
@@ -51,12 +56,22 @@ export function LoginForm() {
     }
 
     setIsLoading(true);
-    // Mock authentication - redirects after a short delay
+    
+    const employee = employees.find(emp => emp.id === selectedEmployeeId);
+
     setTimeout(() => {
-      if (role === "waiter") {
-        router.push("/waiter");
-      } else if (role === "cashier") {
-        router.push("/cashier");
+      if (employee && employee.pin === pin) {
+        if (employee.role === "waiter") {
+            router.push("/waiter");
+        } else if (employee.role === "cashier") {
+            router.push("/cashier");
+        }
+      } else {
+         toast({
+            title: "Error de Autenticación",
+            description: "PIN incorrecto. Por favor, inténtalo de nuevo.",
+            variant: "destructive",
+        });
       }
       setIsLoading(false);
     }, 500);
@@ -67,7 +82,7 @@ export function LoginForm() {
         <CardHeader className="text-center">
             <CardTitle className="text-3xl font-headline">Bienvenido</CardTitle>
             <CardDescription>
-                Ingresa con tu rol y PIN para gestionar tu turno.
+                Ingresa con tu usuario y PIN para gestionar tu turno.
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -94,14 +109,20 @@ export function LoginForm() {
 
             <form onSubmit={handleSubmit} className="grid gap-4 mt-4">
                 <div className="grid gap-2">
-                    <Label htmlFor="role">Rol</Label>
-                    <Select onValueChange={setRole} value={role}>
-                    <SelectTrigger id="role" className="w-full">
-                        <SelectValue placeholder="Selecciona un rol" />
+                    <Label htmlFor="employee">Empleado</Label>
+                    <Select onValueChange={setSelectedEmployeeId} value={selectedEmployeeId}>
+                    <SelectTrigger id="employee" className="w-full">
+                         <SelectValue placeholder={
+                            <div className="flex items-center">
+                                <User className="mr-2 h-4 w-4" />
+                                Selecciona tu usuario
+                            </div>
+                        } />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="waiter">Camarero</SelectItem>
-                        <SelectItem value="cashier">Cajero</SelectItem>
+                        {employees.map(employee => (
+                            <SelectItem key={employee.id} value={employee.id}>{employee.name}</SelectItem>
+                        ))}
                     </SelectContent>
                     </Select>
                 </div>
@@ -115,7 +136,7 @@ export function LoginForm() {
                     onChange={(e) => setPin(e.target.value)}
                     />
                 </div>
-                 <Button type="submit" className="w-full" disabled={isLoading || !role || !pin}>
+                 <Button type="submit" className="w-full" disabled={isLoading || !selectedEmployeeId || !pin}>
                     {isLoading ? "Ingresando..." : (
                     <>
                         <LogIn className="mr-2 h-4 w-4" />
