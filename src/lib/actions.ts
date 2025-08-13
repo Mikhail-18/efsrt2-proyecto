@@ -1,8 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { tables, type OrderItem, transactions } from './data';
+import { tables, type OrderItem, transactions, menu, type MenuItem } from './data';
 
+// Table Actions
 export async function addTable() {
     const newTableId = tables.length > 0 ? Math.max(...tables.map(t => t.id)) + 1 : 1;
     const newTable = {
@@ -31,6 +32,7 @@ export async function deleteTable(tableId: number) {
 }
 
 
+// Order Actions
 export async function updateOrder(tableId: number, newOrder: OrderItem[]) {
   const table = tables.find(t => t.id === tableId);
 
@@ -54,6 +56,7 @@ export async function updateOrder(tableId: number, newOrder: OrderItem[]) {
   return { success: false, message: 'Table not found' };
 }
 
+// Payment Actions
 export async function finalizePayment(tableId: number) {
     const table = tables.find(t => t.id === tableId);
     if (table) {
@@ -68,7 +71,6 @@ export async function finalizePayment(tableId: number) {
     }
     return { success: false, message: 'Table not found' };
 }
-
 
 export async function processPayment(tableId: number, paymentMethod: string) {
     const table = tables.find(t => t.id === tableId);
@@ -102,4 +104,38 @@ export async function clearTransactions() {
     transactions.length = 0;
     revalidatePath('/cashier/close-shift');
     return { success: true };
+}
+
+
+// Admin Actions
+export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string }) {
+    if (data.id) {
+        // Update existing item
+        const index = menu.findIndex(item => item.id === data.id);
+        if (index > -1) {
+            menu[index] = { ...menu[index], ...data, id: data.id };
+            revalidatePath('/admin/menu');
+            return { success: true, menuItem: menu[index] };
+        }
+        return { success: false, message: 'Artículo no encontrado.' };
+    } else {
+        // Create new item
+        const newMenuItem: MenuItem = {
+            ...data,
+            id: `${Date.now()}-${data.name.slice(0, 3)}`,
+        };
+        menu.push(newMenuItem);
+        revalidatePath('/admin/menu');
+        return { success: true, menuItem: newMenuItem };
+    }
+}
+
+export async function deleteMenuItem(itemId: string) {
+    const index = menu.findIndex(item => item.id === itemId);
+    if (index > -1) {
+        menu.splice(index, 1);
+        revalidatePath('/admin/menu');
+        return { success: true };
+    }
+    return { success: false, message: 'Artículo no encontrado.' };
 }
