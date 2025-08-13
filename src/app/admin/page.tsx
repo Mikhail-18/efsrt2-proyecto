@@ -15,10 +15,10 @@ export default function AdminDashboard() {
     {
       title: 'Reportes de Ventas',
       description: 'Visualiza las analíticas y el rendimiento.',
-      href: '#',
+      href: '/admin/reports',
       icon: <BarChart3 className="h-8 w-8 text-primary" />,
-      cta: 'Ver Reportes (Próximamente)',
-      disabled: true,
+      cta: 'Ver Reportes',
+      disabled: false,
     },
     {
       title: 'Gestionar Empleados',
