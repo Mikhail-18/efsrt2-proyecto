@@ -8,12 +8,12 @@ import { getFirestore } from "firebase/firestore";
 // Configuración del proyecto > Tus apps > Configuración del SDK de Firebase > Config
 // =================================================================================
 const firebaseConfig: FirebaseOptions = {
-    apiKey: "AQUÍ_VA_TU_API_KEY",
-    authDomain: "AQUÍ_VA_TU_AUTH_DOMAIN",
-    projectId: "AQUÍ_VA_TU_PROJECT_ID",
-    storageBucket: "AQUÍ_VA_TU_STORAGE_BUCKET",
-    messagingSenderId: "AQUÍ_VA_TU_MESSAGING_SENDER_ID",
-    appId: "AQUÍ_VA_TU_APP_ID",
+    apiKey: "AIzaSyCW8UwbQ0-6zf-GLktC741xpVS-T3AL__E",
+    authDomain: "resto-flow-app.firebaseapp.com",
+    projectId: "resto-flow-app",
+    storageBucket: "resto-flow-app.firebasestorage.app",
+    messagingSenderId: "115823499590",
+    appId: "1:115823499590:web:bbb401f9e64c1d323b6d47",
 };
 
 // Initialize Firebase
