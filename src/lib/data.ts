@@ -77,7 +77,7 @@ const initialTables: Table[] = [
       { ...initialMenu[10], quantity: 2, notes: 'Con hielo' },
   ], waiterName: 'Juan Pérez' },
   { id: 3, name: "Mesa 3", status: "free", order: [] },
-  { id: 4, name: "Mesa 4", status: "reserved", order: [] },
+  { id: 4, name: "Mesa 4", status: "free", order: [] },
   { id: 5, name: "Mesa 5", status: "occupied", order: [
       { ...initialMenu[0], quantity: 2, notes: 'Sin ají' },
       { ...initialMenu[9], quantity: 1, notes: '' },
@@ -90,7 +90,7 @@ const initialTables: Table[] = [
       { ...initialMenu[7], quantity: 2, notes: 'Miel extra' },
   ], waiterName: 'Juan Pérez' },
   { id: 9, name: "Mesa 9", status: "free", order: [] },
-  { id: 10, name: "Mesa 10", status: "reserved", order: [] },
+  { id: 10, name: "Mesa 10", status: "free", order: [] },
   { id: 11, name: "Mesa 11", status: "free", order: [] },
   { id: 12, name: "Mesa 12", status: "free", order: [] },
 ];
