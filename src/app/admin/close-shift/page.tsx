@@ -1,19 +1,58 @@
+
+"use client";
+
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
 import { transactions } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Download, XCircle, ArrowLeft } from 'lucide-react';
 import { clearTransactions } from '@/lib/actions';
-
-export const dynamic = 'force-dynamic';
+import { format } from 'date-fns';
+import { useTransition } from 'react';
 
 export default function AdminCloseShiftPage() {
+  const [isPending, startTransition] = useTransition();
+
   const totalSales = transactions.reduce((sum, tx) => sum + tx.total, 0);
   const cashSales = transactions.filter(tx => tx.paymentMethod === 'Efectivo').reduce((sum, tx) => sum + tx.total, 0);
   const cardSales = transactions.filter(tx => tx.paymentMethod === 'Tarjeta').reduce((sum, tx) => sum + tx.total, 0);
   const yapeSales = transactions.filter(tx => tx.paymentMethod === 'Yape').reduce((sum, tx) => sum + tx.total, 0);
   const plinSales = transactions.filter(tx => tx.paymentMethod === 'Plin').reduce((sum, tx) => sum + tx.total, 0);
+
+  const handleExport = () => {
+    const reportData = transactions.map(tx => ({
+      'Mesa': tx.tableName,
+      'Método de Pago': tx.paymentMethod,
+      'Monto Total': tx.total,
+      'Fecha y Hora': format(tx.timestamp, 'yyyy-MM-dd HH:mm:ss'),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(reportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Transacciones');
+
+    // Add summary
+    const summaryData = [
+      ['Ventas Totales', totalSales],
+      ['Ventas en Efectivo', cashSales],
+      ['Ventas con Tarjeta', cardSales],
+      ['Ventas con Yape', yapeSales],
+      ['Ventas con Plin', plinSales],
+    ];
+    const summaryWorksheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Resumen');
+    
+    const today = format(new Date(), 'yyyy-MM-dd');
+    XLSX.writeFile(workbook, `reporte-caja-${today}.xlsx`);
+  };
+
+  const handleClearTransactions = () => {
+    startTransition(async () => {
+        await clearTransactions();
+    });
+  }
 
   return (
     <div>
@@ -29,14 +68,14 @@ export default function AdminCloseShiftPage() {
                 <p className="text-muted-foreground">Resumen de todas las transacciones pagadas en el turno actual.</p>
             </div>
             <div className="flex items-center gap-4">
-                <Button variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Exportar Reporte
+                <Button variant="outline" onClick={handleExport} disabled={transactions.length === 0}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Exportar Reporte
                 </Button>
-                <form action={clearTransactions}>
-                    <Button variant="destructive" type="submit">
+                <form action={handleClearTransactions}>
+                    <Button variant="destructive" type="submit" disabled={isPending}>
                         <XCircle className="mr-2 h-4 w-4" />
-                        Cerrar Turno
+                        {isPending ? 'Cerrando...' : 'Cerrar Turno'}
                     </Button>
                 </form>
             </div>
