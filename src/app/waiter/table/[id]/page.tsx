@@ -1,19 +1,18 @@
 import { AppHeader } from '@/components/AppHeader';
 import { OrderTaker } from '@/components/waiter/OrderTaker';
-import { getTableById, menu } from '@/lib/data';
+import { getTableById, getMenu } from '@/lib/actions';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default function WaiterTablePage({ params }: { params: { id: string } }) {
-  const tableId = parseInt(params.id, 10);
-  const table = getTableById(tableId);
+export default async function WaiterTablePage({ params }: { params: { id: string } }) {
+  const table = await getTableById(params.id);
 
   if (!table) {
     notFound();
   }
 
-  const menuItems = menu;
+  const menuItems = await getMenu();
 
   return (
     <div className="min-h-screen bg-background">

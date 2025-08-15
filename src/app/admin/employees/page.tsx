@@ -7,8 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { employees } from '@/lib/data';
-import { PlusCircle, ArrowLeft, Badge } from 'lucide-react';
+import { getEmployees } from '@/lib/actions';
+import { PlusCircle, ArrowLeft } from 'lucide-react';
 import { EmployeeDialog } from '@/components/admin/EmployeeDialog';
 import { DeleteEmployeeButton } from '@/components/admin/DeleteEmployeeButton';
 import Link from 'next/link';
@@ -20,8 +20,8 @@ const roleMap = {
   cashier: 'Cajero',
 };
 
-export default function EmployeeManagementPage() {
-  const currentEmployees = employees;
+export default async function EmployeeManagementPage() {
+  const currentEmployees = await getEmployees();
 
   return (
     <div>

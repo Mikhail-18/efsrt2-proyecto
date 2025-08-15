@@ -1,7 +1,8 @@
 import { LoginForm } from '@/components/LoginForm';
-import { employees } from '@/lib/data';
+import { getEmployees } from '@/lib/actions';
 
-export default function Home() {
+export default async function Home() {
+  const employees = await getEmployees();
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-background">
       <div className="text-center mb-12">

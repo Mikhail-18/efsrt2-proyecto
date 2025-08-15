@@ -18,7 +18,7 @@ import { Trash2 } from 'lucide-react';
 import { deleteTable } from '@/lib/actions';
 
 interface DeleteTableButtonProps {
-  tableId: number;
+  tableId: string;
   tableName: string;
   isEnabled: boolean;
 }

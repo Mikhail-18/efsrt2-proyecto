@@ -1,9 +1,13 @@
 import { AppHeader } from '@/components/AppHeader';
 import { TableCard } from '@/components/TableCard';
-import { tables } from '@/lib/data';
+import { getTables } from '@/lib/actions';
 import { AddTableCard } from '@/components/AddTableCard';
 
-export default function WaiterDashboard() {
+export const dynamic = 'force-dynamic';
+
+export default async function WaiterDashboard() {
+  const tables = await getTables();
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader title="Gestión de Mesas - Camarero" />

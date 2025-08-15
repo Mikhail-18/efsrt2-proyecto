@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { menu } from '@/lib/data';
+import { getMenu } from '@/lib/actions';
 import { PlusCircle, ArrowLeft } from 'lucide-react';
 import { MenuItemDialog } from '@/components/admin/MenuItemDialog';
 import { DeleteMenuItemButton } from '@/components/admin/DeleteMenuItemButton';
@@ -15,8 +15,8 @@ import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-export default function MenuManagementPage() {
-  const currentMenu = menu;
+export default async function MenuManagementPage() {
+  const currentMenu = await getMenu();
 
   return (
     <div>

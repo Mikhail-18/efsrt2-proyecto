@@ -1,13 +1,13 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { transactions } from '@/lib/data';
+import { getTransactions } from '@/lib/actions';
 import { CloseShiftAdminClientPage } from '@/components/admin/CloseShiftAdminClientPage';
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminCloseShiftPage() {
-  const currentTransactions = transactions;
+export default async function AdminCloseShiftPage() {
+  const currentTransactions = await getTransactions();
 
   return (
     <div>

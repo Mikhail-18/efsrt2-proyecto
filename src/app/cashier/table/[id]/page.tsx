@@ -1,11 +1,12 @@
 import { AppHeader } from '@/components/AppHeader';
 import { PaymentProcessor } from '@/components/cashier/PaymentProcessor';
-import { getTableById } from '@/lib/data';
+import { getTableById } from '@/lib/actions';
 import { notFound } from 'next/navigation';
 
-export default function CashierTablePage({ params }: { params: { id: string } }) {
-  const tableId = parseInt(params.id, 10);
-  const table = getTableById(tableId);
+export const dynamic = 'force-dynamic';
+
+export default async function CashierTablePage({ params }: { params: { id: string } }) {
+  const table = await getTableById(params.id);
 
   if (!table || table.status !== 'occupied') {
     // Only allow payment for occupied tables

@@ -1,29 +1,70 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { tables, type OrderItem, transactions, menu, type MenuItem, employees, type Employee } from './data';
+import { db } from './firebase';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, writeBatch, query, where, getDoc, DocumentData } from 'firebase/firestore';
+import type { OrderItem, MenuItem, Employee, Table, Transaction } from './data';
+
+// Generic function to convert Firestore doc to a specific type
+function docToDataType<T>(document: DocumentData): T {
+    const data = document.data();
+    // Convert Firestore Timestamps to JS Date objects
+    for (const key in data) {
+        if (data[key] && typeof data[key].toDate === 'function') {
+            data[key] = data[key].toDate();
+        }
+    }
+    return { ...data, id: document.id } as T;
+}
+
 
 // Table Actions
+export async function getTables() {
+    const tablesCollection = collection(db, 'tables');
+    const tableSnapshot = await getDocs(tablesCollection);
+    const tablesList = tableSnapshot.docs.map(d => docToDataType<Table>(d));
+    // Sort tables by name, assuming format "Mesa X"
+    return tablesList.sort((a, b) => {
+        const aNum = parseInt(a.name.split(' ')[1]);
+        const bNum = parseInt(b.name.split(' ')[1]);
+        return aNum - bNum;
+    });
+}
+
+export async function getTableById(id: string) {
+    const tableDocRef = doc(db, 'tables', id);
+    const tableDoc = await getDoc(tableDocRef);
+    if (tableDoc.exists()) {
+        return docToDataType<Table>(tableDoc);
+    }
+    return undefined;
+}
+
 export async function addTable() {
-    const newTableId = tables.length > 0 ? Math.max(...tables.map(t => t.id)) + 1 : 1;
+    const tablesRef = collection(db, 'tables');
+    const snapshot = await getDocs(tablesRef);
+    const newTableNumber = snapshot.docs.length + 1;
+
     const newTable = {
-        id: newTableId,
-        name: `Mesa ${newTableId}`,
+        name: `Mesa ${newTableNumber}`,
         status: 'free' as const,
         order: [],
     };
-    tables.push(newTable);
+    const docRef = await addDoc(tablesRef, newTable);
     revalidatePath('/waiter');
-    return { success: true, newTable };
+    return { success: true, newTable: { ...newTable, id: docRef.id } };
 }
 
-export async function deleteTable(tableId: number) {
-    const tableIndex = tables.findIndex(t => t.id === tableId);
-    if (tableIndex > -1) {
-        if (tables[tableIndex].status !== 'free') {
+export async function deleteTable(tableId: string) {
+    const tableDocRef = doc(db, 'tables', tableId);
+    const tableDoc = await getDoc(tableDocRef);
+
+    if (tableDoc.exists()) {
+        const tableData = tableDoc.data() as Table;
+        if (tableData.status !== 'free') {
             return { success: false, message: 'No se puede eliminar una mesa ocupada o reservada.' };
         }
-        tables.splice(tableIndex, 1);
+        await deleteDoc(tableDocRef);
         revalidatePath('/waiter');
         revalidatePath('/cashier');
         return { success: true };
@@ -33,37 +74,39 @@ export async function deleteTable(tableId: number) {
 
 
 // Order Actions
-export async function updateOrder(tableId: number, newOrder: OrderItem[], waiterName?: string) {
-  const table = tables.find(t => t.id === tableId);
+export async function updateOrder(tableId: string, newOrder: OrderItem[], waiterName?: string) {
+  const tableDocRef = doc(db, 'tables', tableId);
+  
+  const table = await getDoc(tableDocRef);
 
-  if (table) {
-    table.order = newOrder;
-    if (newOrder.length > 0) {
-      table.status = 'occupied';
-      if (waiterName) {
-        table.waiterName = waiterName;
-      }
-    } else {
-      table.status = 'free';
-      table.waiterName = undefined;
-    }
+  if (table.exists()) {
+    const updateData: Partial<Table> = {
+        order: newOrder,
+        status: newOrder.length > 0 ? 'occupied' : 'free'
+    };
+    if(waiterName) updateData.waiterName = waiterName;
+    if(newOrder.length === 0) updateData.waiterName = '';
+
+
+    await updateDoc(tableDocRef, updateData as any);
     
-    // Revalidate paths to reflect changes
     revalidatePath('/', 'layout');
     
-    return { success: true, table };
+    return { success: true };
   }
   
   return { success: false, message: 'Table not found' };
 }
 
 // Payment Actions
-export async function finalizePayment(tableId: number) {
-    const table = tables.find(t => t.id === tableId);
-    if (table) {
-        table.order = [];
-        table.status = 'free';
-        table.waiterName = undefined;
+export async function finalizePayment(tableId: string) {
+    const tableDocRef = doc(db, 'tables', tableId);
+     if ((await getDoc(tableDocRef)).exists()) {
+        await updateDoc(tableDocRef, {
+            order: [],
+            status: 'free',
+            waiterName: ''
+        });
         
         revalidatePath('/waiter');
         revalidatePath('/cashier');
@@ -74,9 +117,14 @@ export async function finalizePayment(tableId: number) {
     return { success: false, message: 'Table not found' };
 }
 
-export async function processPayment(tableId: number, paymentMethod: string) {
-    const table = tables.find(t => t.id === tableId);
-    if (table && table.order.length > 0) {
+export async function processPayment(tableId: string, paymentMethod: string) {
+    const tableDocRef = doc(db, 'tables', tableId);
+    const tableDoc = await getDoc(tableDocRef);
+
+    if (tableDoc.exists()) {
+        const table = docToDataType<Table>(tableDoc);
+        if(table.order.length === 0) return { success: false, message: 'La orden está vacía' };
+        
         const total = table.order.reduce((sum, item) => sum + item.price * item.quantity, 0);
         
         const receiptDetails = {
@@ -85,25 +133,41 @@ export async function processPayment(tableId: number, paymentMethod: string) {
             tableName: table.name
         };
 
-        transactions.push({
-            id: `${Date.now()}-${tableId}`,
+        const newTransaction = {
             tableId: table.id,
             tableName: table.name,
             order: [...table.order],
             total,
             paymentMethod,
             timestamp: new Date(),
-        });
+        };
 
-        // The table is NOT cleared here. This is handled by finalizePayment.
+        await addDoc(collection(db, 'transactions'), newTransaction);
+        
         revalidatePath('/cashier/close-shift');
+        revalidatePath('/admin/close-shift');
         return { success: true, receipt: receiptDetails };
     }
     return { success: false, message: 'Table not found or order is empty' };
 }
 
+export async function getTransactions() {
+    const transactionsCollection = collection(db, 'transactions');
+    const transactionSnapshot = await getDocs(transactionsCollection);
+    return transactionSnapshot.docs.map(d => docToDataType<Transaction>(d));
+}
+
 export async function clearTransactions() {
-    transactions.length = 0;
+    const transactionsCollection = collection(db, 'transactions');
+    const transactionSnapshot = await getDocs(transactionsCollection);
+    
+    const batch = writeBatch(db);
+    transactionSnapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+
     revalidatePath('/cashier/close-shift');
     revalidatePath('/admin/close-shift');
     return { success: true };
@@ -111,24 +175,23 @@ export async function clearTransactions() {
 
 
 // Admin Actions - Menu
+export async function getMenu() {
+    const menuCollection = collection(db, 'menu');
+    const menuSnapshot = await getDocs(menuCollection);
+    return menuSnapshot.docs.map(d => docToDataType<MenuItem>(d));
+}
+
+
 export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string }) {
     let updatedMenuItem: MenuItem | undefined;
 
     if (data.id) {
-        // Update existing item
-        const index = menu.findIndex(item => item.id === data.id);
-        if (index > -1) {
-            menu[index] = { ...menu[index], ...data, id: data.id };
-            updatedMenuItem = menu[index];
-        }
+        const menuItemDocRef = doc(db, 'menu', data.id);
+        await updateDoc(menuItemDocRef, data as any);
+        updatedMenuItem = { ...data, id: data.id } as MenuItem;
     } else {
-        // Create new item
-        const newMenuItem: MenuItem = {
-            ...data,
-            id: `${Date.now()}-${data.name.slice(0, 3)}`,
-        };
-        menu.push(newMenuItem);
-        updatedMenuItem = newMenuItem;
+        const docRef = await addDoc(collection(db, 'menu'), data);
+        updatedMenuItem = { ...data, id: docRef.id } as MenuItem;
     }
     
     revalidatePath('/', 'layout');
@@ -141,35 +204,37 @@ export async function upsertMenuItem(data: Omit<MenuItem, 'id'> & { id?: string 
 }
 
 export async function deleteMenuItem(itemId: string) {
-    const index = menu.findIndex(item => item.id === itemId);
-    if (index > -1) {
-        menu.splice(index, 1);
+    const menuItemDocRef = doc(db, 'menu', itemId);
+    if((await getDoc(menuItemDocRef)).exists()){
+        await deleteDoc(menuItemDocRef);
         revalidatePath('/', 'layout');
         return { success: true };
     }
     return { success: false, message: 'Artículo no encontrado.' };
 }
 
+
 // Admin Actions - Employees
+export async function getEmployees() {
+    const employeesCollection = collection(db, 'employees');
+    const employeeSnapshot = await getDocs(employeesCollection);
+    return employeeSnapshot.docs.map(d => docToDataType<Employee>(d));
+}
+
 export async function upsertEmployee(data: Omit<Employee, 'id'> & { id?: string }) {
     let updatedEmployee: Employee | undefined;
 
     if (data.id) {
-        const index = employees.findIndex(emp => emp.id === data.id);
-        if (index > -1) {
-            employees[index] = { ...employees[index], ...data, id: data.id };
-            updatedEmployee = employees[index];
-        }
+        const employeeDocRef = doc(db, 'employees', data.id);
+        await updateDoc(employeeDocRef, data as any);
+        updatedEmployee = { ...data, id: data.id } as Employee;
     } else {
-        const newEmployee: Employee = {
-            ...data,
-            id: `emp-${Date.now()}`,
-        };
-        employees.push(newEmployee);
-        updatedEmployee = newEmployee;
+        const docRef = await addDoc(collection(db, 'employees'), data);
+        updatedEmployee = { ...data, id: docRef.id } as Employee;
     }
 
     revalidatePath('/admin/employees');
+    revalidatePath('/'); // For login form
 
     if (updatedEmployee) {
         return { success: true, employee: updatedEmployee };
@@ -179,10 +244,11 @@ export async function upsertEmployee(data: Omit<Employee, 'id'> & { id?: string 
 }
 
 export async function deleteEmployee(employeeId: string) {
-    const index = employees.findIndex(emp => emp.id === employeeId);
-    if (index > -1) {
-        employees.splice(index, 1);
+    const employeeDocRef = doc(db, 'employees', employeeId);
+     if((await getDoc(employeeDocRef)).exists()){
+        await deleteDoc(employeeDocRef);
         revalidatePath('/admin/employees');
+        revalidatePath('/'); // For login form
         return { success: true };
     }
     return { success: false, message: 'Empleado no encontrado.' };

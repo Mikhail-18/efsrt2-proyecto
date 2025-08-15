@@ -2,12 +2,12 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { SalesReport } from '@/components/admin/SalesReport';
-import { transactions } from '@/lib/data';
+import { getTransactions } from '@/lib/actions';
 
 export const dynamic = 'force-dynamic';
 
-export default function ReportsPage() {
-  const salesData = transactions;
+export default async function ReportsPage() {
+  const salesData = await getTransactions();
 
   return (
     <div>

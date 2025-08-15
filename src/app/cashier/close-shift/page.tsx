@@ -1,10 +1,10 @@
 import { CloseShiftClientPage } from '@/components/cashier/CloseShiftClientPage';
-import { transactions } from '@/lib/data';
+import { getTransactions } from '@/lib/actions';
 
 export const dynamic = 'force-dynamic';
 
-export default function CloseShiftPage() {
-  const currentTransactions = transactions;
+export default async function CloseShiftPage() {
+  const currentTransactions = await getTransactions();
 
   return (
     <div className="min-h-screen bg-background">

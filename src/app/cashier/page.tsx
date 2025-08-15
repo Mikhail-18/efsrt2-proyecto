@@ -1,11 +1,15 @@
 import Link from 'next/link';
 import { AppHeader } from '@/components/AppHeader';
 import { TableCard } from '@/components/TableCard';
-import { tables } from '@/lib/data';
+import { getTables } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { DoorClosed } from 'lucide-react';
 
-export default function CashierDashboard() {
+export const dynamic = 'force-dynamic';
+
+export default async function CashierDashboard() {
+  const tables = await getTables();
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader title="Gestión de Caja">
