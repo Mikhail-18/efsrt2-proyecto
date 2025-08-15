@@ -2,6 +2,7 @@
 import { initializeApp, getApps, getApp, FirebaseOptions } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
+// TODO: Replace with your own Firebase project configuration
 const firebaseConfig: FirebaseOptions = {
     apiKey: "...",
     authDomain: "...",
